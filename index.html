@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="Live Timing" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#000000" />
+  <meta name="format-detection" content="telephone=no" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
   <title>Live Timing</title>
@@ -21,13 +22,22 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Permitir selección de texto SOLO en inputs cuando se configuran */
+    input, select {
+      -webkit-user-select: auto;
+      user-select: auto;
     }
 
     :root {
       --bg: #000000;
       --bg-card: #080808;
-      --bg-card-alt: #121212;
       --border: #202020;
       --border-bright: #383838;
       --text: #ffffff;
@@ -56,43 +66,6 @@
     }
 
     /* ============================================================
-       AVISO HORIZONTAL (GIRA TU MÓVIL)
-       ============================================================ */
-    #rotate-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 999999;
-      background: #000000;
-      color: #ffffff;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px;
-      gap: 16px;
-    }
-    .rotate-icon {
-      font-size: 3.5rem;
-      animation: rotPhone 2s ease-in-out infinite;
-    }
-    @keyframes rotPhone {
-      0%, 15% { transform: rotate(0deg); }
-      50%, 65% { transform: rotate(90deg); }
-      100% { transform: rotate(0deg); }
-    }
-    .rotate-title {
-      font-size: 1.3rem;
-      font-weight: 900;
-      color: var(--gold);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    @media (orientation: portrait) {
-      #rotate-overlay { display: flex; }
-    }
-
-    /* ============================================================
        SCREENS
        ============================================================ */
     .screen {
@@ -106,20 +79,18 @@
     }
 
     /* ============================================================
-       PANTALLA DE INICIO (MINIMALISTA, SIN TEXTOS INNECESARIOS)
+       PANTALLA DE INICIO (LIMPIA, SIN TEXTOS DECORATIVOS)
        ============================================================ */
     #splash {
-      flex-direction: row;
       align-items: center;
       justify-content: center;
       background: #000000;
       padding: 16px 24px;
-      gap: 20px;
     }
 
     .splash-box {
       width: 100%;
-      max-width: 620px;
+      max-width: 580px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -230,12 +201,57 @@
       color: var(--green);
     }
 
+    /* Adaptación vertical suave para la pantalla de inicio */
+    @media (orientation: portrait) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .action-row {
+        flex-direction: column;
+      }
+      .btn-main, .btn-sub {
+        width: 100%;
+        padding: 14px;
+      }
+    }
+
     /* ============================================================
-       MAIN COCKPIT HUD (HORIZONTAL)
+       COCKPIT TELEMETRY HUD (HORIZONTAL PERMANENTE)
        ============================================================ */
     #app {
       flex-direction: column;
       background: #000000;
+      width: 100vw;
+      height: 100dvh;
+    }
+
+    /* 
+       SOLUCIÓN AL VOLANTE EN CURVAS / MÓVIL EN VERTICAL:
+       Si el volante gira 90 grados en una horquilla y el móvil detecta 'portrait',
+       el HUD NO SE BLOQUEA NUNCA. En su lugar, se mantiene fijado en horizontal 
+       relativo al soporte del volante, girando automáticamente 90deg para que el piloto
+       siga viendo toda la información exactamente igual sin perder ni una décima.
+    */
+    @media (orientation: portrait) {
+      #app.active {
+        position: fixed !important;
+        width: 100vh !important;
+        height: 100vw !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform-origin: 0 0 !important;
+        transform: translate(100vw, 0) rotate(90deg) !important;
+        overflow: hidden !important;
+      }
+      #sessions-modal.open {
+        position: fixed !important;
+        width: 100vh !important;
+        height: 100vw !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform-origin: 0 0 !important;
+        transform: translate(100vw, 0) rotate(90deg) !important;
+      }
     }
 
     /* Barra Superior de Estado */
@@ -414,7 +430,7 @@
       line-height: 1;
     }
 
-    /* Columna Central: HERO DELTA (56%) */
+    /* Columna Central: HERO DELTA GIGANTE (56%) */
     .cockpit-center {
       flex: 1;
       display: flex;
@@ -579,7 +595,6 @@
       line-height: 1;
     }
 
-    /* Flash sector animation */
     @keyframes secPulseAnim {
       0% { background: #333; }
       100% { background: var(--bg-card); }
@@ -631,7 +646,6 @@
       margin-top: 10px;
     }
 
-    /* Lista lateral de sesiones */
     .sessions-sidebar {
       flex: 0 0 280px;
       border-right: 1px solid var(--border);
@@ -674,7 +688,6 @@
       font-weight: 900;
     }
 
-    /* Detalle de vueltas de la sesión */
     .session-detail-view {
       flex: 1;
       overflow-y: auto;
@@ -751,14 +764,6 @@
 <body>
 
   <!-- ============================================================
-       AVISO ORIENTACIÓN HORIZONTAL
-       ============================================================ -->
-  <div id="rotate-overlay">
-    <div class="rotate-icon">📱 ➔ 🔄</div>
-    <div class="rotate-title">COLOCA EL MÓVIL EN HORIZONTAL</div>
-  </div>
-
-  <!-- ============================================================
        PANTALLA DE INICIO (LIMPIA, SIN TEXTOS DECORATIVOS)
        ============================================================ -->
   <div class="screen active" id="splash">
@@ -778,13 +783,13 @@
 
         <div class="field-wrap">
           <label class="field-tag" for="kart-input">Nº KART</label>
-          <input class="ctrl-input ctrl-kart" id="kart-input" type="number" min="1" max="999" placeholder="--" inputmode="numeric" />
+          <input class="ctrl-input ctrl-kart" id="kart-input" type="number" min="1" max="999" placeholder="--" inputmode="numeric" autocorrect="off" autocapitalize="off" spellcheck="false" autocomplete="off" />
         </div>
       </div>
 
       <!-- URL Personalizada (si se selecciona) -->
       <div class="field-wrap" id="custom-url-row" style="display: none;">
-        <input class="ctrl-input" id="custom-url-input" type="url" placeholder="https://www.apex-timing.com/live-timing/..." />
+        <input class="ctrl-input" id="custom-url-input" type="url" placeholder="https://www.apex-timing.com/live-timing/..." autocorrect="off" autocapitalize="off" spellcheck="false" autocomplete="off" />
       </div>
 
       <!-- Botones de Acción -->
@@ -987,7 +992,7 @@
       // Ciclo de bandera: 'WAITING_GREEN', 'ACTIVE', 'FINISHED'
       flagStatus: 'none',
       sessionLifecycle: 'WAITING_GREEN',
-      activeSession: null, // Objeto de sesión grabándose actualmente
+      activeSession: null,
 
       // Tiempos actuales
       curS1: null,
@@ -1031,7 +1036,7 @@
       // Comprobar si ya está instalada como PWA
       if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
         const btn = document.getElementById('btn-pwa-install');
-        if (btn) btn.style.display = 'none'; // Ya está instalada
+        if (btn) btn.style.display = 'none';
       }
 
       // Service Worker
@@ -1050,7 +1055,6 @@
           deferredPrompt = null;
         });
       } else {
-        // En iOS Safari no existe beforeinstallprompt, mostrar modal explicativo
         const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
         if (isIOS) {
           document.getElementById('ios-install-modal').classList.add('open');
@@ -1080,6 +1084,17 @@
         setTimeout(() => inp.style.borderColor = '', 1000);
         return;
       }
+
+      // PREVENCIÓN DEL ERROR "DESHACER TEXTO" (SHAKE TO UNDO):
+      // Desenfoncar cualquier input y ponerlos como readonly para que las vibraciones
+      // del kart NUNCA activen el cuadro emergente del sistema.
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+      document.querySelectorAll('input, select').forEach(el => {
+        el.blur();
+        el.setAttribute('readonly', 'true');
+      });
 
       state.myKart = kartVal;
       localStorage.setItem('kd_kart', kartVal);
@@ -1130,7 +1145,11 @@
 
     function exitToHome() {
       stopAllEngines();
-      // Si había sesión activa, guardarla al salir
+      // Restaurar inputs para poder editarlos en el inicio
+      document.querySelectorAll('input, select').forEach(el => {
+        el.removeAttribute('readonly');
+      });
+
       if (state.activeSession && state.activeSession.laps.length > 0) {
         finalizeAndSaveSession();
       }
@@ -1232,7 +1251,7 @@
     }
 
     // ============================================================
-    //  GESTIÓN DE BANDERAS: VERDE = GRABAR, CUADROS = TERMINAR
+    //  GESTIÓN DE BANDERAS
     // ============================================================
     function handleApexField(field, type, value) {
       if (field === 'light') {
@@ -1253,7 +1272,7 @@
           startSessionRecording();
         }
       }
-      // 2. BANDERA DE CUADROS (Fin de sesión y guardado automático)
+      // 2. BANDERA DE CUADROS (Fin de sesión y guardado)
       else if (lightType && (lightType.includes('fin') || lightType.includes('check') || lightType.includes('end'))) {
         bullet.classList.add('checkered');
         if (state.sessionLifecycle === 'ACTIVE') {
@@ -1284,7 +1303,6 @@
       state.sessionLifecycle = 'ACTIVE';
       setSessionBadge('recording', '● SESIÓN EN CURSO');
 
-      // Crear objeto de sesión nuevo
       state.activeSession = {
         id: 'sess_' + Date.now(),
         date: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
@@ -1360,11 +1378,9 @@
     }
 
     function processMyTelemetry(me) {
-      // 1. Posición y Vueltas
       document.getElementById('hud-pos').textContent = me.pos ? `P${me.pos}` : 'P--';
       document.getElementById('hud-laps').textContent = me.laps || '--';
 
-      // 2. Última vuelta y Mejor vuelta
       if (me.lastLap && me.lastLap !== '—') {
         document.getElementById('hud-last-lap').textContent = me.lastLap;
       }
@@ -1374,12 +1390,11 @@
         if (bSec) state.bestLapSec = bSec;
       }
 
-      // Si aún no se activó la sesión pero el kart ya registra vueltas en verde, iniciarla
       if (state.sessionLifecycle === 'WAITING_GREEN' && me.laps > 0) {
         startSessionRecording();
       }
 
-      // 3. PASO POR SECTOR 1
+      // Sector 1
       if (me.s1 && me.s1 !== '—' && me.s1 !== state.prevS1Str) {
         state.prevS1Str = me.s1;
         state.curS1 = parseSeconds(me.s1);
@@ -1391,7 +1406,7 @@
         handleSectorCrossing(1, state.curS1, state.bestS1, me.s1);
       }
 
-      // 4. PASO POR SECTOR 2
+      // Sector 2
       if (me.s2 && me.s2 !== '—' && me.s2 !== state.prevS2Str) {
         state.prevS2Str = me.s2;
         state.curS2 = parseSeconds(me.s2);
@@ -1405,7 +1420,7 @@
         handleSectorCrossing(2, curCum, bestCum, me.s2, state.curS2, state.bestS2);
       }
 
-      // 5. PASO POR META (VUELTA COMPLETA)
+      // Meta
       if (me.laps !== state.prevLaps && me.laps > 0) {
         state.prevLaps = me.laps;
 
@@ -1420,7 +1435,6 @@
 
         handleFinishCrossing(me.laps, lapSec, bestSec, s3Val, me.lastLap, me.s1, me.s2);
 
-        // Reset temporal de antenas
         state.prevS1Str = '';
         state.prevS2Str = '';
         state.prevS3Str = '';
@@ -1511,17 +1525,13 @@
           isBest: isPB
         };
 
-        // Si es PB, actualizar récord de sesión
         if (isPB || state.activeSession.bestLap === '—') {
           state.activeSession.bestLap = lapTimeStr;
           state.activeSession.bestLapSec = lapSec;
-          // Desmarcar PB en vueltas anteriores
           state.activeSession.laps.forEach(l => l.isBest = false);
         }
 
         state.activeSession.laps.push(lapData);
-
-        // Guardado persistente inmediato en localStorage
         saveActiveSessionSnapshot();
       }
 
@@ -1601,7 +1611,7 @@
     }
 
     // ============================================================
-    //  MODAL DE SESIONES (VUELTA A VUELTA Y SECTORES)
+    //  MODAL DE SESIONES
     // ============================================================
     let selectedSessionId = null;
 
@@ -1629,7 +1639,6 @@
         selectedSessionId = sessions[0].id;
       }
 
-      // Render lista lateral
       sidebar.innerHTML = sessions.map(s => {
         const isSel = s.id === selectedSessionId;
         const isLive = state.activeSession && state.activeSession.id === s.id && state.sessionLifecycle === 'ACTIVE';
@@ -1647,7 +1656,6 @@
         `;
       }).join('');
 
-      // Render detalle de la sesión seleccionada
       const cur = sessions.find(s => s.id === selectedSessionId);
       if (!cur) return;
 
@@ -1700,7 +1708,7 @@
     }
 
     // ============================================================
-    //  SIMULADOR DE TEST (PRUEBA BANDERAS, SECTORES Y SESIÓN)
+    //  SIMULADOR DE TEST
     // ============================================================
     function runSimulatorEngine() {
       let simLap = 1;
@@ -1713,13 +1721,11 @@
       state.bestS3 = bS3;
       state.bestLapSec = bS1 + bS2 + bS3;
 
-      // 1. Simular Pre-Parrilla
       processFlagEvent('');
       setSessionBadge('waiting', 'ESPERANDO BANDERA VERDE');
       document.getElementById('hero-stage').textContent = 'PRE-PARRILLA (SIM)';
-      document.getElementById('hero-desc').textContent = 'LA BANDERA VERDE CAERÁ EN 3s...';
+      document.getElementById('hero-desc').textContent = 'BANDERA VERDE EN 3s...';
 
-      // 2. Caída de Bandera Verde a los 3 segundos
       state.simTimer = setTimeout(() => {
         if (!state.isSimMode) return;
         processFlagEvent('green');
@@ -1761,7 +1767,6 @@
 
                 simLap++;
 
-                // Tras 4 vueltas simuladas, sacar BANDERA DE CUADROS
                 if (simLap > 4) {
                   state.simTimer = setTimeout(() => {
                     processFlagEvent('checkered');
