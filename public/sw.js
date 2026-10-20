@@ -1,12 +1,15 @@
-const CACHE_NAME = 'kartdash-v1';
+const CACHE_NAME = 'kartdash-v2';
 const ASSETS = [
-  '/index.html',
-  '/manifest.json'
+  './',
+  './index.html',
+  './public/manifest.json'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS).catch(err => console.log('SW cache error (ignored):', err));
+    })
   );
   self.skipWaiting();
 });
@@ -21,12 +24,11 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Network first for API calls, cache first for app shell
   if (event.request.url.includes('live-data.apex-timing.com') ||
       event.request.url.includes('live_ajax.php')) {
-    return; // Don't cache API calls
+    return;
   }
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    caches.match(event.request).then(cached => cached || fetch(event.request).catch(() => cached))
   );
 });
