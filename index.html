@@ -29,7 +29,6 @@
       -webkit-touch-callout: none;
     }
 
-    /* Permitir selección de texto SOLO en inputs cuando se configuran */
     input, select {
       -webkit-user-select: auto;
       user-select: auto;
@@ -65,9 +64,6 @@
       position: fixed;
     }
 
-    /* ============================================================
-       SCREENS
-       ============================================================ */
     .screen {
       display: none;
       height: 100dvh;
@@ -79,7 +75,7 @@
     }
 
     /* ============================================================
-       PANTALLA DE INICIO (LIMPIA, SIN TEXTOS DECORATIVOS)
+       PANTALLA DE INICIO (MINIMALISTA)
        ============================================================ */
     #splash {
       align-items: center;
@@ -201,7 +197,6 @@
       color: var(--green);
     }
 
-    /* Adaptación vertical suave para la pantalla de inicio */
     @media (orientation: portrait) {
       .form-grid {
         grid-template-columns: 1fr;
@@ -225,13 +220,7 @@
       height: 100dvh;
     }
 
-    /* 
-       SOLUCIÓN AL VOLANTE EN CURVAS / MÓVIL EN VERTICAL:
-       Si el volante gira 90 grados en una horquilla y el móvil detecta 'portrait',
-       el HUD NO SE BLOQUEA NUNCA. En su lugar, se mantiene fijado en horizontal 
-       relativo al soporte del volante, girando automáticamente 90deg para que el piloto
-       siga viendo toda la información exactamente igual sin perder ni una décima.
-    */
+    /* Giros en curvas de 90°: se mantiene fijado en horizontal en volante */
     @media (orientation: portrait) {
       #app.active {
         position: fixed !important;
@@ -254,7 +243,6 @@
       }
     }
 
-    /* Barra Superior de Estado */
     .telemetry-topbar {
       height: 38px;
       background: #050505;
@@ -351,7 +339,6 @@
       border-color: var(--gold);
     }
 
-    /* Cockpit Body (3 Columnas) */
     .cockpit-grid {
       flex: 1;
       display: flex;
@@ -604,7 +591,7 @@
     }
 
     /* ============================================================
-       MODAL DE SESIONES (HISTORIAL COMPLETO Y VUELTA A VUELTA)
+       MODAL DE SESIONES
        ============================================================ */
     #sessions-modal {
       display: none;
@@ -633,9 +620,6 @@
       font-weight: 900;
       color: var(--gold);
       letter-spacing: 2px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     .sessions-layout {
@@ -734,7 +718,7 @@
       font-weight: 900;
     }
 
-    /* Modal de ayuda iOS para instalar */
+    /* Modal de ayuda iOS */
     #ios-install-modal {
       display: none;
       position: fixed;
@@ -764,20 +748,17 @@
 <body>
 
   <!-- ============================================================
-       PANTALLA DE INICIO (LIMPIA, SIN TEXTOS DECORATIVOS)
+       PANTALLA DE INICIO (LIMPIA)
        ============================================================ -->
   <div class="screen active" id="splash">
     <div class="splash-box">
-      <!-- Selector de Circuito y Kart -->
       <div class="form-grid">
         <div class="field-wrap">
           <label class="field-tag" for="circuit-select">CIRCUITO</label>
           <select class="ctrl-select" id="circuit-select" onchange="onCircuitChange()">
-            <option value="kartcenter-campillos" selected>Kartcenter Campillos</option>
-            <option value="karting-sevilla">Karting Sevilla</option>
-            <option value="zuera">Circuito Zuera</option>
-            <option value="lucas-guerrero">Lucas Guerrero (Chiva)</option>
-            <option value="custom">URL personalizada</option>
+            <option value="campillos" selected>Kartcenter Campillos (Málaga)</option>
+            <option value="lucas-guerrero">Lucas Guerrero (Valencia)</option>
+            <option value="zuera">Circuito Zuera (Zaragoza)</option>
           </select>
         </div>
 
@@ -787,17 +768,11 @@
         </div>
       </div>
 
-      <!-- URL Personalizada (si se selecciona) -->
-      <div class="field-wrap" id="custom-url-row" style="display: none;">
-        <input class="ctrl-input" id="custom-url-input" type="url" placeholder="https://www.apex-timing.com/live-timing/..." autocorrect="off" autocapitalize="off" spellcheck="false" autocomplete="off" />
-      </div>
-
-      <!-- Botones de Acción -->
       <div class="action-row">
         <button class="btn-main" onclick="startApp(false)">⚡ ENTRAR EN PISTA</button>
-        <button class="btn-sub btn-install" id="btn-pwa-install" onclick="triggerPWAInstall()" title="Añadir icono a la pantalla de inicio del móvil">📲 INSTALAR APP</button>
-        <button class="btn-sub" onclick="openSessionsModal()" title="Historial de sesiones">📋 SESIONES</button>
-        <button class="btn-sub" onclick="startApp(true)" title="Probar sectores y banderas">🧪 TEST</button>
+        <button class="btn-sub btn-install" id="btn-pwa-install" onclick="triggerPWAInstall()" title="Añadir a pantalla de inicio">📲 INSTALAR APP</button>
+        <button class="btn-sub" onclick="openSessionsModal()" title="Historial">📋 SESIONES</button>
+        <button class="btn-sub" onclick="startApp(true)" title="Modo Test">🧪 TEST</button>
       </div>
     </div>
   </div>
@@ -807,7 +782,6 @@
        ============================================================ -->
   <div class="screen" id="app">
 
-    <!-- Top Telemetry Bar -->
     <div class="telemetry-topbar">
       <div class="bar-left">
         <div class="flag-bullet" id="flag-bullet"></div>
@@ -822,7 +796,6 @@
       </div>
     </div>
 
-    <!-- Cockpit Telemetry Grid (3 Columnas) -->
     <div class="cockpit-grid">
 
       <!-- Columna Izquierda: Posición y Vueltas -->
@@ -844,7 +817,7 @@
         <div class="hero-delta-box" id="hero-box">
           <div class="hero-stage-badge" id="hero-stage">PRE-PARRILLA</div>
           <div class="hero-delta-val neutral" id="hero-delta">--.---</div>
-          <div class="hero-delta-desc neutral" id="hero-desc">ESPERANDO BANDERA VERDE 🟢</div>
+          <div class="hero-delta-desc neutral" id="hero-desc">CONECTANDO AL TIMING...</div>
         </div>
 
         <div class="bottom-pills">
@@ -890,7 +863,7 @@
   </div>
 
   <!-- ============================================================
-       MODAL DE SESIONES (HISTORIAL COMPLETO Y VUELTA A VUELTA)
+       MODAL DE SESIONES
        ============================================================ -->
   <div id="sessions-modal">
     <div class="modal-bar">
@@ -904,12 +877,7 @@
     </div>
 
     <div class="sessions-layout">
-      <!-- Lista de sesiones guardadas -->
-      <div class="sessions-sidebar" id="sessions-sidebar-list">
-        <!-- Renderizado dinámico -->
-      </div>
-
-      <!-- Detalle vuelta a vuelta de la sesión seleccionada -->
+      <div class="sessions-sidebar" id="sessions-sidebar-list"></div>
       <div class="session-detail-view" id="session-detail-view">
         <div style="color: var(--muted); padding: 40px; text-align: center;">
           Selecciona una sesión para ver el vuelta a vuelta detallado.
@@ -918,78 +886,95 @@
     </div>
   </div>
 
-  <!-- Modal de Instrucciones para iPhone (Safari) -->
+  <!-- Modal iPhone Safari -->
   <div id="ios-install-modal">
     <div class="ios-box">
       <div style="font-size: 1.2rem; font-weight: 900; color: var(--gold);">AÑADIR A LA PANTALLA DE INICIO</div>
       <div style="font-size: 0.85rem; line-height: 1.6; color: #ddd;">
         1. En Safari, pulsa el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba ⎋).<br>
         2. Baja y pulsa en <strong>"Añadir a pantalla de inicio"</strong> ➕.<br>
-        3. ¡Listo! Se creará el acceso directo para abrir la app al instante sin navegadores.
+        3. ¡Listo! Se creará el acceso directo para abrir la app al instante sin navegador.
       </div>
       <button class="btn-main" onclick="document.getElementById('ios-install-modal').classList.remove('open')">ENTENDIDO</button>
     </div>
   </div>
 
   <!-- ============================================================
-       TELEMETRY & SESSION LOGIC ENGINE
+       TELEMETRY ENGINE (COPIADO Y ADAPTADO DE LA APP INDIVIDUAL)
        ============================================================ -->
   <script>
+    // Configuración exacta de circuitos y mapeo de columnas comprobado en Individual
     const CIRCUITS = {
-      'kartcenter-campillos': {
-        name: 'Kartcenter Campillos',
-        url: 'https://www.apex-timing.com/live-timing/kartcenter-campillos/',
-        host: 'live-data.apex-timing.com',
-        port: 9370,
-        reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
+      "campillos": {
+        id: "campillos",
+        name: "Kartcenter Campillos (Málaga)",
+        url: "https://www.apex-timing.com/live-timing/kartcenter-campillos/",
+        configPort: 9370,
+        columnMap: {
+          rk: 'c3',
+          no: 'c4',
+          dr: 'c5',
+          s1: 'c6',
+          s2: 'c7',
+          s3: 'c8',
+          llp: 'c9',
+          blp: 'c10',
+          gap: 'c11',
+          int: 'c12',
+          tlp: 'c13'
+        }
       },
-      'karting-sevilla': {
-        name: 'Karting Sevilla',
-        url: 'https://www.apex-timing.com/live-timing/karting-sevilla/',
-        host: 'live-data.apex-timing.com',
-        port: 9370,
-        reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
+      "lucas-guerrero": {
+        id: "lucas-guerrero",
+        name: "Lucas Guerrero (Valencia)",
+        url: "https://live.apex-timing.com/kartodromo-lucas-guerrero/",
+        configPort: 9950,
+        columnMap: {
+          rk: 'c3',
+          no: 'c4',
+          dr: 'c5',
+          s1: 'c6',
+          s2: 'c7',
+          s3: 'c8',
+          llp: 'c6',
+          blp: 'c7',
+          gap: 'c8',
+          int: 'c9',
+          tlp: 'c10'
+        }
       },
-      'zuera': {
-        name: 'Circuito Zuera',
-        url: 'https://www.apex-timing.com/live-timing/zuera/',
-        host: 'live-data.apex-timing.com',
-        port: 9370,
-        reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
-      },
-      'lucas-guerrero': {
-        name: 'Lucas Guerrero',
-        url: 'https://www.apex-timing.com/live-timing/lucas-guerrero/',
-        host: 'live-data.apex-timing.com',
-        port: 9370,
-        reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
-      },
-      'custom': {
-        name: 'Personalizado',
-        url: '',
-        host: 'live-data.apex-timing.com',
-        port: 9370,
-        reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
+      "zuera": {
+        id: "zuera",
+        name: "Circuito Zuera (Zaragoza)",
+        url: "https://live.apex-timing.com/circuito-internacional-zuera/",
+        configPort: 6940,
+        columnMap: {
+          rk: 'c2',
+          no: 'c5',
+          dr: 'c3',
+          s1: 'c6',
+          s2: 'c7',
+          s3: 'c8',
+          llp: 'c8',
+          blp: 'c11',
+          gap: 'c9',
+          int: 'c10',
+          tlp: 'c9'
+        }
       }
     };
 
     // Estado principal
     const state = {
       myKart: '',
-      circuitKey: 'kartcenter-campillos',
-      circuit: CIRCUITS['kartcenter-campillos'],
+      activeCircuitId: 'campillos',
+      circuit: CIRCUITS['campillos'],
       isSimMode: false,
       simTimer: null,
       pollTimer: null,
       pollRunning: false,
-      counter: -1,
-      initToken: 0,
-      reqId: Math.floor(Math.random() * 1e9) || 1,
-      _reqCounter: 0,
-      ignored: 0,
-      lastPollMs: 0,
 
-      // Ciclo de bandera: 'WAITING_GREEN', 'ACTIVE', 'FINISHED'
+      // Flags de sesión
       flagStatus: 'none',
       sessionLifecycle: 'WAITING_GREEN',
       activeSession: null,
@@ -1003,7 +988,7 @@
       bestS3: null,
       bestLapSec: null,
 
-      // Detección de paso por antena
+      // Antenas anteriores
       prevLaps: -1,
       prevS1Str: '',
       prevS2Str: '',
@@ -1012,7 +997,317 @@
       drivers: []
     };
 
-    // PWA Install prompt handling
+    // Servicio de conexión de Apex Timing (Motor idéntico a Individual)
+    class ApexTimingService {
+      constructor() {
+        this.configHost = 'live-data.apex-timing.com';
+        this.pollInit = 1;
+        this.pollIndex = 0;
+        this.pollCounter = 0;
+        this.randomSessionId = Math.floor(Math.random() * 1000000000) || 1;
+        this.activeProxyIndex = 0;
+
+        // Lista de proxies CORS con fallback idéntica a Individual
+        this.corsProxies = [
+          (url) => url, // Intento directo primero
+          (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+          (url) => `https://corsproxy.org/?${encodeURIComponent(url)}`,
+          (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+        ];
+
+        this.sessionRows = new Map();
+      }
+
+      start() {
+        this.pollInit = 1;
+        this.pollIndex = 0;
+        this.pollCounter = 0;
+        this.sessionRows.clear();
+        this.fetchData();
+        
+        const scheduleNext = () => {
+          if (!state.pollRunning) return;
+          const jitter = Math.floor(Math.random() * 500) - 250;
+          const interval = Math.max(1200, 1800 + jitter);
+          state.pollTimer = setTimeout(() => {
+            this.fetchData();
+            scheduleNext();
+          }, interval);
+        };
+        scheduleNext();
+      }
+
+      stop() {
+        if (state.pollTimer) {
+          clearTimeout(state.pollTimer);
+          state.pollTimer = null;
+        }
+      }
+
+      async fetchData() {
+        if (!state.pollRunning || state.isSimMode) return;
+        const circuit = state.circuit;
+        const apiPort = circuit.configPort + 4;
+        const targetUrl = `https://${this.configHost}/live-timing/commonv2/functions/live_ajax.php?version=1.0.0&init=${this.pollInit}&index=${this.pollIndex}&port=${apiPort}&counter=${this.pollCounter}&duration=100&id=${this.randomSessionId}&ignored=0`;
+
+        for (let pi = 0; pi < this.corsProxies.length; pi++) {
+          const proxyIdx = (this.activeProxyIndex + pi) % this.corsProxies.length;
+          const proxyUrl = this.corsProxies[proxyIdx](targetUrl);
+
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+            const response = await fetch(proxyUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) continue;
+
+            const dataText = await response.text();
+            this.pollCounter += 1;
+
+            const isInvalid = !dataText ||
+              dataText === 'error' ||
+              dataText.includes('<!DOCTYPE') ||
+              dataText.includes('Server-side requests are not allowed') ||
+              dataText.includes('error code:') ||
+              (dataText.startsWith('{') && dataText.includes('"error"'));
+
+            if (!isInvalid) {
+              const atIdx1 = dataText.indexOf('@');
+              const atIdx2 = dataText.indexOf('@', atIdx1 + 1);
+
+              if (atIdx1 >= 0 && atIdx2 > atIdx1) {
+                const newInit = parseInt(dataText.substring(0, atIdx1), 10);
+                this.pollInit = newInit || this.pollInit;
+                this.pollIndex = parseInt(dataText.substring(atIdx1 + 1, atIdx2), 10) || this.pollIndex;
+
+                const payload = dataText.substring(atIdx2 + 1);
+                this.activeProxyIndex = proxyIdx;
+                this.processRawPayload(payload);
+              }
+              break;
+            }
+          } catch (err) {}
+        }
+      }
+
+      processRawPayload(payload) {
+        if (!payload || payload.trim() === '') return;
+        const circuit = state.circuit;
+        const colMap = circuit.columnMap;
+        const lines = payload.split('\n');
+        let hasUpdates = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const pipeIdx = line.indexOf('|');
+          if (pipeIdx < 0) continue;
+
+          const cellId = line.substring(0, pipeIdx);
+          const rest = line.substring(pipeIdx + 1);
+          const pipeIdx2 = rest.indexOf('|');
+          const valueType = pipeIdx2 >= 0 ? rest.substring(0, pipeIdx2) : rest;
+          const value = pipeIdx2 >= 0 ? rest.substring(pipeIdx2 + 1) : '';
+
+          if (cellId === 'init') {
+            this.sessionRows.clear();
+            continue;
+          }
+
+          // Banderas (light, dyn1, track)
+          if (cellId === 'light' || cellId === 'dyn1' || cellId === 'track') {
+            const statusLower = (valueType + ' ' + value).toLowerCase();
+            if (statusLower.includes('chequered') || statusLower.includes('cuadros') || statusLower.includes('finish') || statusLower.includes('fin')) {
+              processFlagEvent('checkered');
+            } else if (statusLower.includes('red') || statusLower.includes('roja')) {
+              processFlagEvent('red');
+            } else if (statusLower.includes('yellow') || statusLower.includes('amarilla') || statusLower.includes('sc')) {
+              processFlagEvent('yellow');
+            } else if (statusLower.includes('green') || statusLower.includes('go') || statusLower.includes('verde') || cellId === 'light') {
+              processFlagEvent('green');
+            }
+            continue;
+          }
+
+          // Grid HTML completo
+          if (cellId === 'grid') {
+            try {
+              const gridHtml = rest.substring(pipeIdx2 + 1);
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = '<table>' + gridHtml + '</table>';
+
+              const rows = tempDiv.querySelectorAll('tr[data-id]');
+              rows.forEach(row => {
+                const rId = row.getAttribute('data-id');
+                if (!rId || rId === 'r0') return;
+
+                if (!this.sessionRows.has(rId)) {
+                  this.sessionRows.set(rId, {
+                    position: 0,
+                    kartNumber: 0,
+                    name: 'Piloto',
+                    lastLap: '—',
+                    bestLap: '—',
+                    currentLap: 0,
+                    s1: '—',
+                    s2: '—',
+                    s3: '—'
+                  });
+                }
+                const entry = this.sessionRows.get(rId);
+
+                row.querySelectorAll('[data-id]').forEach(el => {
+                  const dataId = el.getAttribute('data-id');
+                  if (!dataId || !dataId.startsWith(rId)) return;
+                  const colSuffix = dataId.substring(rId.length);
+                  const dataType = el.getAttribute('data-type') || (el.className ? el.className.trim() : '');
+                  const val = el.textContent.trim();
+                  this.applyColumnValue(entry, colSuffix, val, colMap, dataType);
+                });
+              });
+              hasUpdates = true;
+            } catch(e) {}
+            continue;
+          }
+
+          // Celdas incrementales (e.g. r9c6|tn|28.555)
+          if (cellId.startsWith('r') && /^r\d+/.test(cellId)) {
+            const match = cellId.match(/^(r\d+)(.+)$/);
+            if (!match) continue;
+
+            const rowId = match[1];
+            const suffix = match[2];
+
+            if (!this.sessionRows.has(rowId)) {
+              this.sessionRows.set(rowId, {
+                position: 0,
+                kartNumber: 0,
+                name: 'Piloto',
+                lastLap: '—',
+                bestLap: '—',
+                currentLap: 0,
+                s1: '—',
+                s2: '—',
+                s3: '—'
+              });
+            }
+            const entry = this.sessionRows.get(rowId);
+            if (this.applyColumnValue(entry, suffix, value, colMap, valueType)) {
+              hasUpdates = true;
+            }
+          }
+        }
+
+        if (hasUpdates) {
+          state.drivers = Array.from(this.sessionRows.values())
+            .filter(d => d && d.kartNumber > 0)
+            .sort((a, b) => (a.position || 999) - (b.position || 999));
+
+          // Buscar mi kart
+          const targetKartNum = parseInt(state.myKart, 10);
+          const me = state.drivers.find(d => d.kartNumber === targetKartNum || String(d.kartNumber) === String(state.myKart));
+          if (me) {
+            processMyTelemetry(me);
+          } else {
+            // Indicar conexión viva en espera del kart configurado
+            if (state.drivers.length > 0 && document.getElementById('hero-desc').textContent.includes('CONECTANDO')) {
+              document.getElementById('hero-desc').textContent = `EN PISTA (${state.drivers.length} KARTS) · ESPERANDO KART #${state.myKart}`;
+            }
+          }
+        }
+      }
+
+      applyColumnValue(entry, colSuffix, value, colMap, dataType = '') {
+        if (!colSuffix || value === undefined || value === null) return false;
+        const valStr = String(value).trim();
+        if (!valStr) return false;
+
+        // 1. Posición
+        if (colSuffix === colMap.rk || dataType === 'rk') {
+          const pos = parseInt(valStr.replace(/[^\d]/g, ''), 10);
+          if (!isNaN(pos) && pos > 0) {
+            entry.position = pos;
+            return true;
+          }
+        }
+
+        // 2. Número de kart
+        if (colSuffix === colMap.no || dataType === 'no' || dataType.startsWith('no')) {
+          const kn = parseInt(valStr.replace(/[^\d]/g, ''), 10);
+          if (!isNaN(kn) && kn > 0) {
+            entry.kartNumber = kn;
+            return true;
+          }
+        }
+
+        // 3. Piloto
+        if (colSuffix === colMap.dr || dataType === 'dr') {
+          const clean = valStr.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+          if (clean && clean !== 'Piloto') {
+            entry.name = clean;
+            return true;
+          }
+        }
+
+        // 4. Sector 1
+        if (colSuffix === colMap.s1 || dataType === 's1') {
+          if (valStr && valStr !== '—') {
+            entry.s1 = valStr;
+            return true;
+          }
+        }
+
+        // 5. Sector 2
+        if (colSuffix === colMap.s2 || dataType === 's2') {
+          if (valStr && valStr !== '—') {
+            entry.s2 = valStr;
+            return true;
+          }
+        }
+
+        // 6. Sector 3
+        if (colSuffix === colMap.s3 || dataType === 's3') {
+          if (valStr && valStr !== '—') {
+            entry.s3 = valStr;
+            return true;
+          }
+        }
+
+        // 7. Última vuelta
+        if (colSuffix === colMap.llp || dataType === 'llp' || dataType === 'tn' || dataType === 'ti') {
+          if (valStr && valStr !== '—') {
+            entry.lastLap = valStr;
+            return true;
+          }
+        }
+
+        // 8. Mejor vuelta
+        if (colSuffix === colMap.blp || dataType === 'blp' || dataType === 'ib') {
+          if (valStr && valStr !== '—') {
+            entry.bestLap = valStr;
+            return true;
+          }
+        }
+
+        // 9. Vueltas totales
+        if (colSuffix === colMap.tlp || dataType === 'tlp') {
+          const l = parseInt(valStr.replace(/[^\d]/g, ''), 10);
+          if (!isNaN(l) && l > 0) {
+            entry.currentLap = l;
+            return true;
+          }
+        }
+
+        return false;
+      }
+    }
+
+    const apexTimingEngine = new ApexTimingService();
+
+    // PWA Install
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -1022,24 +1317,21 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Cargar kart guardado
       const savedKart = localStorage.getItem('kd_kart');
       if (savedKart) document.getElementById('kart-input').value = savedKart;
 
-      const savedCircuit = localStorage.getItem('kd_circuit');
+      const savedCircuit = localStorage.getItem('kd_active_circuit');
       if (savedCircuit && CIRCUITS[savedCircuit]) {
         document.getElementById('circuit-select').value = savedCircuit;
-        state.circuitKey = savedCircuit;
+        state.activeCircuitId = savedCircuit;
         state.circuit = CIRCUITS[savedCircuit];
       }
 
-      // Comprobar si ya está instalada como PWA
       if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
         const btn = document.getElementById('btn-pwa-install');
         if (btn) btn.style.display = 'none';
       }
 
-      // Service Worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
       }
@@ -1059,21 +1351,20 @@
         if (isIOS) {
           document.getElementById('ios-install-modal').classList.add('open');
         } else {
-          alert('Para instalar la app, abre el menú de opciones de tu navegador (⋮) y selecciona "Instalar aplicación" o "Añadir a la pantalla de inicio".');
+          alert('Abre el menú de opciones de tu navegador (⋮) y pulsa "Instalar aplicación" o "Añadir a la pantalla de inicio".');
         }
       }
     }
 
     function onCircuitChange() {
       const sel = document.getElementById('circuit-select').value;
-      state.circuitKey = sel;
-      state.circuit = CIRCUITS[sel] || CIRCUITS['kartcenter-campillos'];
-      document.getElementById('custom-url-row').style.display = (sel === 'custom') ? 'flex' : 'none';
-      localStorage.setItem('kd_circuit', sel);
+      state.activeCircuitId = sel;
+      state.circuit = CIRCUITS[sel] || CIRCUITS['campillos'];
+      localStorage.setItem('kd_active_circuit', sel);
     }
 
     // ============================================================
-    //  INICIO DE SESIÓN
+    //  INICIO Y CONTROL DE PANTALLA
     // ============================================================
     function startApp(isSimulator = false) {
       const kartVal = document.getElementById('kart-input').value.trim();
@@ -1085,9 +1376,7 @@
         return;
       }
 
-      // PREVENCIÓN DEL ERROR "DESHACER TEXTO" (SHAKE TO UNDO):
-      // Desenfoncar cualquier input y ponerlos como readonly para que las vibraciones
-      // del kart NUNCA activen el cuadro emergente del sistema.
+      // Evitar bug "deshacer texto" (shake to undo) desenfocando inputs
       if (document.activeElement && document.activeElement.blur) {
         document.activeElement.blur();
       }
@@ -1103,13 +1392,12 @@
       document.getElementById('hud-kart-tag').textContent = `KART #${kartVal}`;
       document.getElementById('hud-circuit-name').textContent = state.circuit.name;
 
-      // Reseteo de telemetría previa
       state.activeSession = null;
       state.sessionLifecycle = 'WAITING_GREEN';
       setSessionBadge('waiting', 'ESPERANDO BANDERA VERDE');
-      document.getElementById('hero-stage').textContent = 'PRE-PARRILLA';
+      document.getElementById('hero-stage').textContent = 'CONECTANDO';
       document.getElementById('hero-delta').textContent = '---';
-      document.getElementById('hero-desc').textContent = 'ESPERANDO BANDERA VERDE 🟢';
+      document.getElementById('hero-desc').textContent = 'CONECTANDO AL TIMING...';
       document.getElementById('hero-box').className = 'hero-delta-box';
 
       tryLockLandscape();
@@ -1119,7 +1407,8 @@
       if (isSimulator) {
         runSimulatorEngine();
       } else {
-        startLivePolling();
+        state.pollRunning = true;
+        apexTimingEngine.start();
       }
     }
 
@@ -1144,8 +1433,10 @@
     }
 
     function exitToHome() {
-      stopAllEngines();
-      // Restaurar inputs para poder editarlos en el inicio
+      state.pollRunning = false;
+      apexTimingEngine.stop();
+      if (state.simTimer) clearTimeout(state.simTimer);
+
       document.querySelectorAll('input, select').forEach(el => {
         el.removeAttribute('readonly');
       });
@@ -1159,12 +1450,6 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-    }
-
-    function stopAllEngines() {
-      state.pollRunning = false;
-      if (state.pollTimer) clearTimeout(state.pollTimer);
-      if (state.simTimer) clearTimeout(state.simTimer);
     }
 
     // Wake Lock
@@ -1183,119 +1468,32 @@
     });
 
     // ============================================================
-    //  LIVE POLLING ENGINE
+    //  GESTIÓN DE BANDERAS Y SESIÓN
     // ============================================================
-    function startLivePolling() {
-      stopAllEngines();
-      state.pollRunning = true;
-      state.counter = -1;
-      state.initToken = 0;
-      state.ignored = 0;
-      pollTick();
-    }
-
-    async function pollTick() {
-      if (!state.pollRunning) return;
-
-      const now = Date.now();
-      const duration = state.lastPollMs ? (now - state.lastPollMs) : 0;
-      state.lastPollMs = now;
-
-      const reqUrl = state.circuit.reqUrl;
-      const port = state.circuit.port + 4;
-
-      const url = `${reqUrl}live_ajax.php?version=1.0.0` +
-        `&init=${state.initToken}` +
-        `&index=${state.counter}` +
-        `&port=${port}` +
-        `&counter=${++state._reqCounter}` +
-        `&duration=${duration}` +
-        `&id=${state.reqId}` +
-        `&ignored=${state.ignored}`;
-
-      try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        const text = await resp.text();
-        if (text && text.length > 0) {
-          parseApexResponse(text);
-        }
-
-        state.pollTimer = setTimeout(pollTick, 1000);
-      } catch (e) {
-        state.ignored++;
-        state.pollTimer = setTimeout(pollTick, 4000);
-      }
-    }
-
-    function parseApexResponse(raw) {
-      const parts = raw.split('@');
-      if (parts.length < 3) return;
-
-      state.initToken = parts[0];
-      state.counter = parts[1];
-
-      if (parts[2] === 'REFRESH_BROWSER') {
-        setTimeout(() => window.location.reload(), 8000);
-        return;
-      }
-
-      const lines = parts[2].split('\n');
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        const cols = line.split('|');
-        while (cols.length < 3) cols.push('');
-        handleApexField(cols[0], cols[1], cols[2]);
-      }
-    }
-
-    // ============================================================
-    //  GESTIÓN DE BANDERAS
-    // ============================================================
-    function handleApexField(field, type, value) {
-      if (field === 'light') {
-        processFlagEvent(type);
-      } else if (field === 'grid') {
-        if (value) parseFullGrid(value);
-      }
-    }
-
-    function processFlagEvent(lightType) {
+    function processFlagEvent(flag) {
       const bullet = document.getElementById('flag-bullet');
       bullet.className = 'flag-bullet';
 
-      // 1. BANDERA VERDE (Inicio de toma de datos)
-      if (lightType && (lightType.includes('green') || lightType === 'go' || lightType === 'p')) {
+      if (flag === 'green') {
         bullet.classList.add('green');
         if (state.sessionLifecycle !== 'ACTIVE') {
           startSessionRecording();
         }
-      }
-      // 2. BANDERA DE CUADROS (Fin de sesión y guardado)
-      else if (lightType && (lightType.includes('fin') || lightType.includes('check') || lightType.includes('end'))) {
+      } else if (flag === 'checkered') {
         bullet.classList.add('checkered');
         if (state.sessionLifecycle === 'ACTIVE') {
           finishSessionRecording();
         }
-      }
-      // 3. BANDERA AMARILLA / SAFETY CAR
-      else if (lightType && (lightType.includes('yellow') || lightType.includes('sc'))) {
+      } else if (flag === 'yellow') {
         bullet.classList.add('yellow');
         if (state.sessionLifecycle === 'ACTIVE') {
           setSessionBadge('recording', '🟡 AMARILLA / SC');
         }
-      }
-      // 4. BANDERA ROJA
-      else if (lightType && lightType.includes('red')) {
+      } else if (flag === 'red') {
         bullet.classList.add('red');
         if (state.sessionLifecycle === 'ACTIVE') {
           setSessionBadge('recording', '🔴 BANDERA ROJA');
         }
-      }
-      // 5. SIN BANDERA / REPOSO
-      else {
-        bullet.style.background = '#444';
       }
     }
 
@@ -1317,7 +1515,6 @@
 
       document.getElementById('hero-stage').textContent = 'BANDERA VERDE 🟢';
       document.getElementById('hero-desc').textContent = 'REGISTRANDO TIEMPOS';
-
       if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
     }
 
@@ -1339,47 +1536,11 @@
     }
 
     // ============================================================
-    //  PARSER DE GRID & TELEMETRÍA SECTOR A SECTOR
+    //  PROCESAMIENTO DE TELEMETRÍA DEL KART EN TIEMPO REAL
     // ============================================================
-    function parseFullGrid(html) {
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      const rows = div.querySelectorAll('tr[data-id]');
-      const drivers = [];
-
-      rows.forEach(r => {
-        if (r.getAttribute('data-id') === 'r0') return;
-        const c = {};
-        r.querySelectorAll('td[data-type]').forEach(td => {
-          c[td.getAttribute('data-type')] = td.textContent.trim();
-        });
-
-        if (!c['no']) return;
-        drivers.push({
-          pos: parseInt(c['rk']) || 0,
-          kart: c['no'],
-          driver: c['dr'] || '',
-          s1: c['s1'] || '',
-          s2: c['s2'] || '',
-          s3: c['s3'] || '',
-          lastLap: c['llp'] || '',
-          bestLap: c['blp'] || '',
-          laps: parseInt(c['tlp']) || 0
-        });
-      });
-
-      drivers.sort((a, b) => (a.pos || 999) - (b.pos || 999));
-      state.drivers = drivers;
-
-      const me = drivers.find(d => d.kart === state.myKart);
-      if (me) {
-        processMyTelemetry(me);
-      }
-    }
-
     function processMyTelemetry(me) {
-      document.getElementById('hud-pos').textContent = me.pos ? `P${me.pos}` : 'P--';
-      document.getElementById('hud-laps').textContent = me.laps || '--';
+      document.getElementById('hud-pos').textContent = me.position ? `P${me.position}` : 'P--';
+      document.getElementById('hud-laps').textContent = me.currentLap || '--';
 
       if (me.lastLap && me.lastLap !== '—') {
         document.getElementById('hud-last-lap').textContent = me.lastLap;
@@ -1390,11 +1551,12 @@
         if (bSec) state.bestLapSec = bSec;
       }
 
-      if (state.sessionLifecycle === 'WAITING_GREEN' && me.laps > 0) {
+      // Si aún no se activó por bandera pero ya ruedan en pista, activar grabación
+      if (state.sessionLifecycle === 'WAITING_GREEN' && me.currentLap > 0) {
         startSessionRecording();
       }
 
-      // Sector 1
+      // SECTOR 1
       if (me.s1 && me.s1 !== '—' && me.s1 !== state.prevS1Str) {
         state.prevS1Str = me.s1;
         state.curS1 = parseSeconds(me.s1);
@@ -1406,7 +1568,7 @@
         handleSectorCrossing(1, state.curS1, state.bestS1, me.s1);
       }
 
-      // Sector 2
+      // SECTOR 2
       if (me.s2 && me.s2 !== '—' && me.s2 !== state.prevS2Str) {
         state.prevS2Str = me.s2;
         state.curS2 = parseSeconds(me.s2);
@@ -1420,9 +1582,9 @@
         handleSectorCrossing(2, curCum, bestCum, me.s2, state.curS2, state.bestS2);
       }
 
-      // Meta
-      if (me.laps !== state.prevLaps && me.laps > 0) {
-        state.prevLaps = me.laps;
+      // META (VUELTA COMPLETA)
+      if (me.currentLap !== state.prevLaps && me.currentLap > 0) {
+        state.prevLaps = me.currentLap;
 
         const lapSec = parseSeconds(me.lastLap);
         const bestSec = state.bestLapSec || lapSec;
@@ -1433,7 +1595,7 @@
           if (s3Calc > 0) s3Val = s3Calc.toFixed(3);
         }
 
-        handleFinishCrossing(me.laps, lapSec, bestSec, s3Val, me.lastLap, me.s1, me.s2);
+        handleFinishCrossing(me.currentLap, lapSec, bestSec, s3Val, me.lastLap, me.s1, me.s2);
 
         state.prevS1Str = '';
         state.prevS2Str = '';
@@ -1513,7 +1675,6 @@
 
       renderHeroDelta(`META · VTA ${lapNum}`, lapDelta, isPB);
 
-      // GUARDAR VUELTA EN LA SESIÓN ACTIVA
       if (state.activeSession) {
         const lapData = {
           lap: lapNum,
@@ -1574,7 +1735,7 @@
     }
 
     // ============================================================
-    //  PERSISTENCIA DE SESIONES EN LOCALSTORAGE
+    //  SESIONES EN LOCALSTORAGE
     // ============================================================
     function getStoredSessions() {
       try {
@@ -1604,15 +1765,12 @@
     }
 
     function clearAllSessions() {
-      if (confirm('¿Estás seguro de que deseas borrar todo el historial de sesiones?')) {
+      if (confirm('¿Deseas borrar todo el historial de sesiones?')) {
         localStorage.removeItem('kd_saved_sessions');
         renderSessionsModal();
       }
     }
 
-    // ============================================================
-    //  MODAL DE SESIONES
-    // ============================================================
     let selectedSessionId = null;
 
     function openSessionsModal() {
@@ -1736,7 +1894,6 @@
           document.getElementById('hud-pos').textContent = `P${simPos}`;
           document.getElementById('hud-laps').textContent = simLap;
 
-          // Sector 1
           state.simTimer = setTimeout(() => {
             if (!state.isSimMode) return;
             const v1 = (Math.random() * 0.5 - 0.22);
@@ -1744,7 +1901,6 @@
             state.curS1 = parseFloat(s1Time);
             handleSectorCrossing(1, state.curS1, state.bestS1, s1Time);
 
-            // Sector 2
             state.simTimer = setTimeout(() => {
               if (!state.isSimMode) return;
               const v2 = (Math.random() * 0.45 - 0.20);
@@ -1752,7 +1908,6 @@
               state.curS2 = parseFloat(s2Time);
               handleSectorCrossing(2, state.curS1 + state.curS2, state.bestS1 + state.bestS2, s2Time, state.curS2, state.bestS2);
 
-              // Meta
               state.simTimer = setTimeout(() => {
                 if (!state.isSimMode) return;
                 const v3 = (Math.random() * 0.40 - 0.18);
@@ -1783,7 +1938,6 @@
       }, 3000);
     }
 
-    // Utilidades
     function parseSeconds(str) {
       if (!str || str === '—' || str === '-') return null;
       str = str.toString().replace(',', '.').trim();
