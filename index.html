@@ -268,111 +268,6 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    .live-karts-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      border-top: 1px solid #1a1a1a;
-      padding-top: 8px;
-    }
-    .live-karts-title {
-      font-size: 0.6rem;
-      color: var(--muted);
-      letter-spacing: 1.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-    .live-karts-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      max-height: 95px;
-      overflow-y: auto;
-    }
-    .live-kart-chip {
-      background: #141414;
-      border: 1px solid var(--border-bright);
-      border-radius: 6px;
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 800;
-      padding: 6px 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-    }
-    .live-kart-chip:hover, .live-kart-chip:active {
-      background: #252525;
-      border-color: var(--gold);
-      transform: scale(1.02);
-    }
-    .live-kart-chip.selected {
-      background: #231e05;
-      border-color: var(--gold);
-      color: var(--gold);
-    }
-    .chip-pos {
-      color: var(--gold);
-      font-weight: 900;
-    }
-    .chip-kart {
-      font-weight: 900;
-    }
-    .chip-lap {
-      font-size: 0.68rem;
-      color: var(--purple);
-    }
-
-    /* Barra rápida de karts en cabina */
-    .cockpit-karts-bar {
-      height: 28px;
-      background: #080808;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      gap: 8px;
-      overflow-x: auto;
-      flex-shrink: 0;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .cockpit-karts-bar::-webkit-scrollbar { display: none; }
-    .cockpit-karts-label {
-      font-size: 0.6rem;
-      font-weight: 900;
-      color: var(--gold);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      flex-shrink: 0;
-    }
-    .cockpit-karts-scroll {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .cockpit-chip {
-      background: #141414;
-      border: 1px solid var(--border-bright);
-      border-radius: 4px;
-      color: #ffffff;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 800;
-      padding: 2px 8px;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .cockpit-chip.selected {
-      background: #262005;
-      border-color: var(--gold);
-      color: var(--gold);
-    }
 
     @media (orientation: portrait) {
       .form-grid {
@@ -945,7 +840,7 @@
         </div>
       </div>
 
-      <!-- Live Timing Status Banner & Quick-select -->
+      <!-- Live Timing Status Banner -->
       <div class="live-track-box" id="live-track-box">
         <div class="live-track-header">
           <div class="live-status-pill">
@@ -953,10 +848,6 @@
             <span id="live-status-text">CONECTANDO A APEX TIMING...</span>
           </div>
           <span class="live-session-text" id="live-session-text">—</span>
-        </div>
-        <div class="live-karts-wrap" id="live-karts-wrap" style="display: none;">
-          <div class="live-karts-title">KARTS EN PISTA (TOCA PARA SELECCIONAR):</div>
-          <div class="live-karts-chips" id="live-karts-chips"></div>
         </div>
       </div>
 
@@ -968,7 +859,7 @@
       </div>
 
       <div class="version-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #141414; font-size: 0.65rem; color: #555;">
-        <span id="app-build-tag">REV: 2026.10.20-REV5 · APEX DIRECT</span>
+        <span id="app-build-tag">REV: 2026.10.20-REV6 · KART DIRECTO</span>
         <button type="button" onclick="forceAppUpdate()" style="background: none; border: none; color: var(--cyan); cursor: pointer; font-family: var(--font-mono); font-size: 0.65rem; font-weight: bold; text-decoration: underline;">🔄 RECARGAR VERSIÓN</button>
       </div>
     </div>
@@ -990,14 +881,6 @@
         <button class="btn-top" onclick="openSessionsModal()">📋 SESIONES</button>
         <button class="btn-top" onclick="toggleFullscreen()">⛶</button>
         <button class="btn-top" onclick="exitToHome()">✕</button>
-      </div>
-    </div>
-
-    <!-- Barra rápida de karts detectados en pista -->
-    <div class="cockpit-karts-bar" id="cockpit-karts-bar">
-      <span class="cockpit-karts-label" id="cockpit-session-title">TANDA EN VIVO</span>
-      <div class="cockpit-karts-scroll" id="cockpit-karts-chips">
-        <!-- Renderizado dinámico -->
       </div>
     </div>
 
@@ -1528,81 +1411,34 @@
 
     const apexTimingEngine = new ApexTimingService();
 
-    // Actualización de estado en vivo en pantalla de inicio y cabina
+    // Actualización de estado en vivo en pantalla de inicio
     function updateLiveStatusUI() {
       const dot = document.getElementById('live-indicator-dot');
       const statusText = document.getElementById('live-status-text');
       const sessionText = document.getElementById('live-session-text');
-      const kartsWrap = document.getElementById('live-karts-wrap');
-      const kartsChips = document.getElementById('live-karts-chips');
 
-      if (state.isOnline) {
-        dot.className = 'live-indicator-dot online';
-        statusText.textContent = `🟢 EN VIVO · ${state.trackName || state.circuit.name}`;
-      } else {
-        dot.className = 'live-indicator-dot connecting';
-        statusText.textContent = 'CONECTANDO A APEX TIMING...';
-      }
-
-      if (state.sessionTitle) {
-        sessionText.textContent = `TANDA: ${state.sessionTitle}`;
-        sessionText.style.display = 'inline-block';
-      } else {
-        sessionText.textContent = 'PISTA ABIERTA';
-      }
-
-      // Karts en inicio
-      if (state.drivers && state.drivers.length > 0) {
-        kartsWrap.style.display = 'flex';
-        kartsChips.innerHTML = state.drivers.map(d => {
-          const isSelected = String(d.kartNumber) === String(state.myKart);
-          const bestStr = d.bestLap && d.bestLap !== '—' ? `<span class="chip-lap">${d.bestLap}</span>` : '';
-          return `<button class="live-kart-chip ${isSelected ? 'selected' : ''}" type="button" onclick="selectKart(${d.kartNumber})">
-            <span class="chip-pos">P${d.position}</span>
-            <span class="chip-kart">#${d.kartNumber}</span>
-            ${bestStr}
-          </button>`;
-        }).join('');
-      } else {
-        kartsWrap.style.display = state.sessionTitle ? 'flex' : 'none';
-        kartsChips.innerHTML = `<span style="font-size:0.75rem; color:var(--muted); padding:4px 0;">Pista abierta · En espera de salida de karts</span>`;
-      }
-
-      // Barra rápida de karts en cabina
-      const cockpitTitle = document.getElementById('cockpit-session-title');
-      if (cockpitTitle) {
-        cockpitTitle.textContent = state.sessionTitle ? `TANDA: ${state.sessionTitle}` : 'TANDA EN VIVO';
-      }
-      const cockpitChips = document.getElementById('cockpit-karts-chips');
-      if (cockpitChips) {
-        if (state.drivers && state.drivers.length > 0) {
-          cockpitChips.innerHTML = state.drivers.map(d => {
-            const isSelected = String(d.kartNumber) === String(state.myKart);
-            return `<button class="cockpit-chip ${isSelected ? 'selected' : ''}" type="button" onclick="selectKart(${d.kartNumber})">
-              #${d.kartNumber} (P${d.position})
-            </button>`;
-          }).join('');
+      if (dot && statusText) {
+        if (state.isOnline) {
+          dot.className = 'live-indicator-dot online';
+          statusText.textContent = `🟢 EN VIVO · ${state.trackName || state.circuit.name}`;
         } else {
-          cockpitChips.innerHTML = `<span style="font-size:0.65rem; color:var(--muted);">Esperando karts en pista</span>`;
+          dot.className = 'live-indicator-dot connecting';
+          statusText.textContent = 'CONECTANDO A APEX TIMING...';
         }
       }
-    }
 
-    function selectKart(kartNum) {
-      state.myKart = String(kartNum);
-      localStorage.setItem('kd_kart', state.myKart);
+      if (sessionText) {
+        if (state.sessionTitle) {
+          sessionText.textContent = `TANDA: ${state.sessionTitle}`;
+          sessionText.style.display = 'inline-block';
+        } else {
+          sessionText.textContent = 'PISTA ABIERTA';
+        }
+      }
 
-      const inp = document.getElementById('kart-input');
-      if (inp) inp.value = kartNum;
-
-      const tag = document.getElementById('hud-kart-tag');
-      if (tag) tag.textContent = `KART #${kartNum}`;
-
-      updateLiveStatusUI();
-
-      const appScreen = document.getElementById('app');
-      if (appScreen && appScreen.classList.contains('active')) {
-        updateCockpitTelemetry();
+      const hudName = document.getElementById('hud-circuit-name');
+      if (hudName) {
+        hudName.textContent = `${state.circuit.name}${state.sessionTitle ? ' · ' + state.sessionTitle : ''}`;
       }
     }
 
