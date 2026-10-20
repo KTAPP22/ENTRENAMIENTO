@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>KartDash 🏎️</title>
+
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000;
+      --bg2: #0a0a0a;
+      --bg3: #111;
+      --border: #222;
+      --text: #fff;
+      --muted: #666;
+      --yellow: #FFD700;
+      --cyan: #00E5FF;
+      --green: #00E676;
+      --red: #FF1744;
+      --orange: #FF6D00;
+      --purple: #D500F9;
+      --blue: #2979FF;
+      --accent: #FFD700;
+      --font-mono: 'Courier New', Courier, monospace;
+      --r: 6px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      height: 100%;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* ===== SCREENS ===== */
+    .screen { display: none; height: 100dvh; overflow: hidden; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    /* ===== SPLASH SCREEN ===== */
+    #splash {
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+    }
+
+    .splash-logo {
+      font-size: 3rem;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .splash-title {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--yellow);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .splash-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .input-label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .input-field {
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 900;
+      padding: 14px 18px;
+      text-align: center;
+      letter-spacing: 4px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .input-field:focus { border-color: var(--yellow); }
+    .input-field::placeholder { color: var(--muted); font-size: 1rem; letter-spacing: 1px; }
+
+    .input-field-small {
+      font-size: 0.85rem;
+      letter-spacing: 0;
+      padding: 10px 14px;
+      font-weight: normal;
+    }
+
+    .btn-primary {
+      background: var(--yellow);
+      border: none;
+      border-radius: var(--r);
+      color: #000;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      padding: 18px;
+      text-transform: uppercase;
+      width: 100%;
+      max-width: 320px;
+      transition: opacity 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary:active { opacity: 0.8; transform: scale(0.98); }
+
+    /* ===== APP LAYOUT ===== */
+    #app {
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ===== TOP BAR ===== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .topbar-session {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .flag-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse 1.5s infinite;
+    }
+    .flag-dot.green { background: var(--green); }
+    .flag-dot.yellow { background: var(--yellow); animation: none; }
+    .flag-dot.red { background: var(--red); animation: none; }
+    .flag-dot.gray { background: var(--muted); animation: none; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,230,118,0.6); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(0,230,118,0); }
+    }
+
+    .session-name {
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .conn-badge {
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      padding: 3px 7px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+    .conn-badge.ok { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+    .conn-badge.err { background: rgba(255,23,68,0.15); color: var(--red); border: 1px solid rgba(255,23,68,0.3); }
+    .conn-badge.wait { background: rgba(255,215,0,0.15); color: var(--yellow); border: 1px solid rgba(255,215,0,0.3); }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .clock {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .btn-icon:active { background: var(--bg3); }
+
+    /* ===== TAB NAV ===== */
+    .tabnav {
+      display: flex;
+      background: var(--bg2);
+      border-bottom: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      padding: 10px 4px;
+      text-transform: uppercase;
+      transition: color 0.15s;
+      margin-bottom: -2px;
+    }
+
+    .tab.active {
+      border-bottom-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    /* ===== CONTENT AREA ===== */
+    .content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tab-panel {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-panel.active { display: block; }
+
+    /* ===== DASHBOARD (MY CARD) ===== */
+    #panel-dash {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .my-pos-card {
+      background: linear-gradient(135deg, var(--bg3) 0%, #0d0d0d 100%);
+      border: 2px solid var(--yellow);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .my-pos-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center top, rgba(255,215,0,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .kart-badge {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: var(--yellow);
+      color: #000;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+    }
+
+    .pos-label {
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .pos-number {
+      font-size: 6rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -4px;
+      color: var(--yellow);
+      text-shadow: 0 0 40px rgba(255,215,0,0.4);
+    }
+
+    .pos-number.p1 { color: var(--yellow); text-shadow: 0 0 40px rgba(255,215,0,0.5); }
+    .pos-number.p2 { color: #c0c0c0; text-shadow: 0 0 40px rgba(192,192,192,0.4); }
+    .pos-number.p3 { color: #cd7f32; text-shadow: 0 0 40px rgba(205,127,50,0.4); }
+
+    .driver-name {
+      font-size: 0.85rem;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ===== STATS ROW ===== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .stat-value.time { font-size: 1.35rem; letter-spacing: 0; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.cyan { color: var(--cyan); }
+    .stat-value.white { color: var(--text); }
+
+    /* ===== GAP ROW ===== */
+    .gap-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .gap-card {
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .gap-card .arrow {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .gap-card .gap-label {
+      font-size: 0.55rem;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .gap-value {
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .gap-value.ahead { color: var(--red); }
+    .gap-value.behind { color: var(--green); }
+    .gap-value.leader { color: var(--yellow); }
+
+    .gap-rival-kart {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ===== SECTORS ===== */
+    .sectors-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .sector-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .sector-label {
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .sector-value {
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    /* ===== LEADERBOARD ===== */
+    #panel-board {
+      padding: 0;
+    }
+
+    .board-header {
+      display: grid;
+      grid-template-columns: 36px 36px 1fr 68px 68px 54px;
+      gap: 4px;
+      padding: 8px 10px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.55rem;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .board-row {
+      display: grid;
+      grid-template-columns: 36px 36px 1fr 68px 68px 54px;
+      gap: 4px;
+      padding: 9px 10px;
+      border-bottom: 1px solid #111;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .board-row.my-kart {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid var(--yellow);
+    }
+
+    .board-row.pit-row {
+      opacity: 0.5;
+    }
+
+    .board-pos {
+      font-size: 1.1rem;
+      font-weight: 900;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .board-pos.p1 { color: var(--yellow); }
+    .board-pos.p2 { color: #c0c0c0; }
+    .board-pos.p3 { color: #cd7f32; }
+
+    .board-kart {
+      font-size: 0.85rem;
+      font-weight: 900;
+      text-align: center;
+      background: var(--bg3);
+      border-radius: 4px;
+      padding: 3px 4px;
+      letter-spacing: 0;
+    }
+
+    .board-kart.my-k { background: var(--yellow); color: #000; }
+
+    .board-driver {
+      font-size: 0.75rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-left: 4px;
+    }
+
+    .board-lap {
+      font-size: 0.75rem;
+      text-align: right;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .board-best {
+      font-size: 0.75rem;
+      text-align: right;
+      color: var(--green);
+      letter-spacing: 0;
+    }
+
+    .board-laps-count {
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-align: center;
+      color: var(--cyan);
+    }
+
+    /* Color classes for lap times */
+    .t-purple { color: var(--purple); }
+    .t-green { color: var(--green); }
+    .t-yellow { color: var(--yellow); }
+    .t-white { color: var(--text); }
+    .t-red { color: var(--red); }
+
+    /* ===== LAPS PANEL ===== */
+    #panel-laps {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .laps-header {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .laps-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .laps-table th {
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .laps-table th:first-child { text-align: left; }
+
+    .laps-table td {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 8px 8px;
+      text-align: right;
+      border-bottom: 1px solid #0d0d0d;
+    }
+
+    .laps-table td:first-child { text-align: left; color: var(--muted); font-size: 0.75rem; }
+
+    .lap-best-row td { color: var(--purple); }
+    .lap-last-row td:last-child { color: var(--cyan); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      height: 100%;
+      color: var(--muted);
+      padding: 40px;
+      text-align: center;
+    }
+
+    .empty-state .icon { font-size: 3rem; }
+    .empty-state .msg { font-size: 0.75rem; letter-spacing: 1px; line-height: 1.6; }
+
+    /* ===== CONNECTING STATE ===== */
+    .connecting-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      height: 100%;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--yellow);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .connecting-text {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    /* ===== FLASH ANIMATION for new lap ===== */
+    @keyframes flashGreen {
+      0% { background: rgba(0,230,118,0.25); }
+      100% { background: transparent; }
+    }
+
+    .new-lap-flash {
+      animation: flashGreen 0.8s ease-out;
+    }
+
+    /* ===== BEST LAP INDICATOR ===== */
+    .best-tag {
+      font-size: 0.5rem;
+      letter-spacing: 1px;
+      background: rgba(213,0,249,0.2);
+      color: var(--purple);
+      border: 1px solid rgba(213,0,249,0.4);
+      border-radius: 4px;
+      padding: 1px 5px;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ===== LANDSCAPE adaptation ===== */
+    @media (orientation: landscape) and (max-height: 480px) {
+      .pos-number { font-size: 4rem; }
+      .my-pos-card { padding: 10px; }
+      .stats-row { grid-template-columns: repeat(4, 1fr); }
+      .gap-row { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* ===== NO SESSION banner ===== */
+    .no-session {
+      background: rgba(255,23,68,0.1);
+      border: 1px solid rgba(255,23,68,0.3);
+      border-radius: 8px;
+      color: var(--red);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      padding: 10px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    /* ===== TIMING STATE colors ===== */
+    .state-pit {
+      font-size: 0.6rem;
+      background: rgba(255,109,0,0.2);
+      color: var(--orange);
+      border-radius: 4px;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== SPLASH SCREEN ===================== -->
+<div class="screen active" id="splash">
+  <div class="splash-logo">🏎️</div>
+  <div class="splash-title">KartDash</div>
+  <div class="splash-sub">Live Timing · Karting Campillos</div>
+
+  <div class="input-group">
+    <div class="input-label">🏁 Tu número de kart</div>
+    <input
+      class="input-field"
+      id="kart-input"
+      type="number"
+      min="1"
+      max="999"
+      maxlength="3"
+      placeholder="Nº"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      autocomplete="off"
+    />
+  </div>
+
+  <button class="btn-primary" id="btn-enter" onclick="enterApp()">
+    ⚡ ENTRAR AL TIMING
+  </button>
+
+  <div class="input-group" style="margin-top: 8px;">
+    <div class="input-label">⚙️ URL Live Timing (opcional)</div>
+    <input
+      class="input-field input-field-small"
+      id="url-input"
+      type="url"
+      placeholder="https://live-data.apex-timing.com/..."
+      autocomplete="off"
+    />
+  </div>
+</div>
+
+<!-- ===================== APP SCREEN ===================== -->
+<div class="screen" id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-session">
+      <div class="flag-dot gray" id="flag-dot"></div>
+      <div class="session-name" id="session-name">Conectando...</div>
+    </div>
+    <div class="topbar-right">
+      <span class="clock" id="clock">--:--</span>
+      <div class="conn-badge wait" id="conn-badge">WAIT</div>
+      <button class="btn-icon" onclick="goBack()" title="Salir">✕</button>
+    </div>
+  </div>
+
+  <!-- TAB NAV -->
+  <div class="tabnav">
+    <button class="tab active" id="tab-dash"   onclick="switchTab('dash')">🏎️ Mi Kart</button>
+    <button class="tab"        id="tab-board"  onclick="switchTab('board')">📊 Tabla</button>
+    <button class="tab"        id="tab-laps"   onclick="switchTab('laps')">🕐 Vueltas</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- MY KART DASHBOARD -->
+    <div class="tab-panel active" id="panel-dash">
+      <div class="connecting-state" id="dash-connecting">
+        <div class="spinner"></div>
+        <div class="connecting-text">CONECTANDO AL LIVE TIMING...</div>
+      </div>
+
+      <div id="dash-content" style="display:none; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+
+        <!-- POS CARD -->
+        <div class="my-pos-card" id="pos-card">
+          <div class="kart-badge" id="kart-badge">K—</div>
+          <div class="pos-label">POSICIÓN</div>
+          <div class="pos-number" id="pos-number">—</div>
+          <div class="driver-name" id="driver-name">—</div>
+        </div>
+
+        <!-- VUELTA + MEJOR -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">⏱ Última vuelta</div>
+            <div class="stat-value time white" id="last-lap">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">🏆 Mejor vuelta</div>
+            <div class="stat-value time green" id="best-lap">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">🔄 Nº vuelta</div>
+            <div class="stat-value cyan" id="lap-count">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">👥 Pilotos</div>
+            <div class="stat-value white" id="total-drivers">—</div>
+          </div>
+        </div>
+
+        <!-- GAPS -->
+        <div class="gap-row">
+          <div class="gap-card" id="gap-ahead-card">
+            <div class="arrow">⬆️</div>
+            <div class="gap-label">Gap Delantero</div>
+            <div class="gap-value ahead" id="gap-ahead">—</div>
+            <div class="gap-rival-kart" id="gap-ahead-kart"></div>
+          </div>
+          <div class="gap-card" id="gap-behind-card">
+            <div class="arrow">⬇️</div>
+            <div class="gap-label">Gap Trasero</div>
+            <div class="gap-value behind" id="gap-behind">—</div>
+            <div class="gap-rival-kart" id="gap-behind-kart"></div>
+          </div>
+        </div>
+
+        <!-- SECTORS -->
+        <div class="sectors-row">
+          <div class="sector-card">
+            <div class="sector-label">S1</div>
+            <div class="sector-value" id="s1">—</div>
+          </div>
+          <div class="sector-card">
+            <div class="sector-label">S2</div>
+            <div class="sector-value" id="s2">—</div>
+          </div>
+          <div class="sector-card">
+            <div class="sector-label">S3</div>
+            <div class="sector-value" id="s3">—</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="tab-panel" id="panel-board">
+      <div class="board-header">
+        <span>POS</span>
+        <span>K</span>
+        <span style="padding-left:4px">PILOTO</span>
+        <span style="text-align:right">ÚLT. VTA</span>
+        <span style="text-align:right">MEJOR</span>
+        <span style="text-align:center">VTAS</span>
+      </div>
+      <div id="board-body">
+        <div class="empty-state">
+          <div class="icon">📡</div>
+          <div class="msg">Esperando datos del<br>live timing...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY LAPS -->
+    <div class="tab-panel" id="panel-laps">
+      <div class="laps-header">Historial de vueltas — Kart <span id="laps-kart-num">—</span></div>
+      <div id="laps-content">
+        <div class="empty-state">
+          <div class="icon">🕐</div>
+          <div class="msg">Las vueltas aparecerán<br>cuando empiece la sesión</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+const state = {
+  myKart: '',
+  sessionName: '',
+  sessionType: '',   // 'r' = race, 'p' = practice/best_time
+  isLive: false,
+  connected: false,
+  drivers: [],
+  myDriver: null,
+  myLaps: [],
+  kartColors: {},    // kart number → CSS color from server
+  flag: 'gray',
+  counter: -1,
+  initToken: 0,
+  reqId: Math.floor(Math.random() * 1e9) || 1,
+  _reqCounter: 0,
+  ignored: 0,
+  pollTimer: null,
+  pollPaused: false,
+  lastPollMs: 0,
+};
+
+// Apex Timing endpoint — confirmed from config.js of kartcenter-campillos
+const APEX_PORT = 9370;
+const APEX_REQUEST_URL = 'https://live-data.apex-timing.com/live-timing/commonv2/functions/';
+
+// ============================================================
+//  ENTRY
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const savedKart = localStorage.getItem('kd_kart');
+  if (savedKart) document.getElementById('kart-input').value = savedKart;
+
+  // Update clock
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Register SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+});
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' +
+    now.getMinutes().toString().padStart(2,'0');
+}
+
+function enterApp() {
+  const kartVal = document.getElementById('kart-input').value.trim();
+  if (!kartVal) {
+    document.getElementById('kart-input').focus();
+    document.getElementById('kart-input').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('kart-input').style.borderColor = '', 1000);
+    return;
+  }
+  state.myKart = kartVal;
+  localStorage.setItem('kd_kart', kartVal);
+
+  document.getElementById('kart-badge').textContent = 'K' + kartVal;
+  document.getElementById('laps-kart-num').textContent = kartVal;
+
+  showScreen('app');
+  requestWakeLock();
+  startPolling();
+}
+
+function goBack() {
+  stopPolling();
+  if (state.ws) { state.ws.close(); state.ws = null; }
+  state.counter = -1;
+  state.initToken = 0;
+  showScreen('splash');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+//  WAKE LOCK
+// ============================================================
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) {}
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.connected) requestWakeLock();
+});
+
+// ============================================================
+//  TABS
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ============================================================
+//  POLLING ENGINE
+// ============================================================
+function startPolling() {
+  state.counter = -1;
+  state.initToken = 0;
+  state.ignored = 0;
+  poll();
+}
+
+function stopPolling() {
+  if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
+  state.pollPaused = true;
+}
+
+async function poll() {
+  if (state.pollPaused) return;
+
+  const now = Date.now();
+  const duration = state.lastPollMs ? now - state.lastPollMs : 0;
+  state.lastPollMs = now;
+
+  const url = `${APEX_REQUEST_URL}live_ajax.php?version=1.0.0` +
+    `&init=${state.initToken}` +
+    `&index=${state.counter}` +
+    `&port=${APEX_PORT + 4}` +
+    `&counter=${++state._reqCounter || (state._reqCounter = 0)}` +
+    `&duration=${duration}` +
+    `&id=${state.reqId}` +
+    `&ignored=${state.ignored}`;
+
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    const text = await resp.text();
+    setConnected(true);
+
+    if (text && text.length > 0) {
+      parseResponse(text);
+    }
+
+    state.pollTimer = setTimeout(poll, 1000);
+  } catch(e) {
+    setConnected(false);
+    state.ignored++;
+    state.pollTimer = setTimeout(poll, 5000);
+  }
+}
+
+// ============================================================
+//  RESPONSE PARSER
+// ============================================================
+function parseResponse(raw) {
+  // Format: "initToken@index@data\n..."
+  const atParts = raw.split('@');
+  if (atParts.length < 3) return;
+
+  state.initToken = atParts[0];
+  state.counter = atParts[1];
+
+  if (atParts[2] === 'REFRESH_BROWSER') {
+    setTimeout(() => window.location.reload(), 8000);
+    return;
+  }
+
+  const lines = atParts[2].split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const parts = line.split('|');
+    while (parts.length < 3) parts.push('');
+    processMessage(parts[0], parts[1], parts[2]);
+  }
+}
+
+function processMessage(field, type, value) {
+  switch(field) {
+    case 'init':
+      // type: 'r' = race mode, 'p' = practice, 'n' = no session
+      state.sessionType = type;
+      state.isLive = (type === 'p' || type === 'r');
+      if (type === 'n') {
+        updateFlag('');
+        document.getElementById('session-name').textContent = 'Sin sesión activa';
+      }
+      break;
+
+    case 'title2':
+      // Session category / name (e.g. "JUNIOR/SENIOR")
+      if (value) {
+        state.sessionName = value;
+        document.getElementById('session-name').textContent = value;
+      }
+      break;
+
+    case 'title1':
+      // Track name shown in header
+      if (value) {
+        state.sessionName = value + (state.sessionName ? ' · ' + state.sessionName : '');
+        document.getElementById('session-name').textContent = state.sessionName;
+      }
+      break;
+
+    case 'dyn1':
+      // type: 'count' = lap counter, 'time' = session time
+      // value: current value
+      break;
+
+    case 'light':
+      // type is the CSS class for the flag: 'go', 'lg' (no session), 'sc', 'fin'...
+      updateFlag(type);
+      break;
+
+    case 'grid':
+      // Full grid HTML (tbody rows with driver data)
+      if (value) parseGrid(value);
+      break;
+
+    case 'css':
+      // Kart color styles: field=css, type=no1..noN, value=CSS
+      if (type && type.startsWith('no')) {
+        const kartNum = type.replace(/^no/, '');
+        const colorMatch = value.match(/border-bottom-color:([^!;]+)/);
+        if (colorMatch) {
+          state.kartColors[kartNum] = colorMatch[1].trim();
+        }
+      }
+      break;
+
+    case 'track':
+    case 'best':
+    case 'msg':
+    case 'wth1':
+    case 'wth2':
+    case 'wth3':
+    case 'com':
+    case 'effects':
+    case 'comments':
+      break;
+
+    default:
+      // Incremental row updates from Apex Timing:
+      // field = row data-id (e.g. "r1", "r5")
+      // type  = CSS class for cell (e.g. "t-green", "t-purple")
+      // value = new cell HTML content
+      // We queue these and apply them to our internal grid state
+      if (/^r\d+$/.test(field) && field !== 'r0') {
+        handleRowUpdate(field, type, value);
+      }
+      break;
+  }
+}
+
+// ============================================================
+//  INCREMENTAL ROW UPDATES
+// ============================================================
+// Internal store: rowId → { colIndex: { cls, val } }
+// Column order from the header row: grp, sta, rk, no, dr, s1, s2, s3, llp, blp, gap, int, tlp
+const COL_TYPES = ['grp','sta','rk','no','dr','s1','s2','s3','llp','blp','gap','int','tlp'];
+let rowUpdateCounters = {}; // rowId → next column index for cycling updates
+
+function handleRowUpdate(rowId, cssClass, value) {
+  // Apex sends cell updates cycling through columns in order
+  // We track which column is next for each row
+  if (rowUpdateCounters[rowId] === undefined) rowUpdateCounters[rowId] = 0;
+
+  const colIdx = rowUpdateCounters[rowId] % COL_TYPES.length;
+  const colType = COL_TYPES[colIdx];
+  rowUpdateCounters[rowId]++;
+
+  // Find the driver for this row and update the relevant field
+  const driver = state.drivers.find(d => d.id === rowId);
+  if (!driver) return;
+
+  // Strip HTML tags from value for plain text fields
+  const plainVal = value.replace(/<[^>]*>/g, '').trim();
+
+  switch(colType) {
+    case 'rk': driver.pos = parseInt(plainVal) || driver.pos; break;
+    case 'no': driver.kart = plainVal || driver.kart; break;
+    case 'dr': driver.driver = plainVal || driver.driver; break;
+    case 's1': driver.s1 = plainVal || driver.s1; break;
+    case 's2': driver.s2 = plainVal || driver.s2; break;
+    case 's3': driver.s3 = plainVal || driver.s3; break;
+    case 'llp':
+      if (plainVal && plainVal !== driver.lastLap) {
+        driver.lastLap = plainVal;
+        // New lap completed!
+        if (driver.kart === state.myKart && plainVal !== '—') {
+          recordMyLap(plainVal, driver);
+          document.getElementById('pos-card')?.classList.add('new-lap-flash');
+          setTimeout(() => document.getElementById('pos-card')?.classList.remove('new-lap-flash'), 800);
+        }
+      }
+      break;
+    case 'blp': driver.bestLap = plainVal || driver.bestLap; break;
+    case 'gap': driver.gap = plainVal; break;
+    case 'int': driver.interval = plainVal; break;
+    case 'tlp': driver.laps = parseInt(plainVal) || driver.laps; break;
+  }
+
+  // Re-sort and re-render
+  state.drivers.sort((a, b) => a.pos - b.pos || 0);
+  state.myDriver = state.drivers.find(d => d.kart === state.myKart) || null;
+  computeAdjacentGaps(state.drivers);
+  renderDashboard();
+  renderLeaderboard(state.drivers);
+}
+
+// ============================================================
+//  FLAG HANDLER
+// ============================================================
+function updateFlag(flagClass) {
+  const dot = document.getElementById('flag-dot');
+  const badge = document.getElementById('conn-badge');
+  dot.className = 'flag-dot';
+
+  if (!flagClass || flagClass === 'lg') {
+    // No session / session ended
+    dot.classList.add('gray');
+    state.flag = 'gray';
+  } else if (flagClass.includes('green') || flagClass === 'go') {
+    dot.classList.add('green');
+    state.flag = 'green';
+  } else if (flagClass.includes('yellow') || flagClass.includes('sc')) {
+    dot.classList.add('yellow');
+    state.flag = 'yellow';
+  } else if (flagClass.includes('red')) {
+    dot.classList.add('red');
+    state.flag = 'red';
+  } else if (flagClass.includes('fin') || flagClass.includes('check')) {
+    dot.classList.add('gray');
+    state.flag = 'finished';
+  } else {
+    dot.classList.add('green');
+    state.flag = 'green';
+  }
+}
+
+// ============================================================
+//  GRID PARSER
+// ============================================================
+function parseGrid(htmlStr) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = htmlStr;
+
+  const rows = tmp.querySelectorAll('tr[data-id]');
+  const drivers = [];
+
+  rows.forEach(row => {
+    const dataId = row.getAttribute('data-id');
+    if (dataId === 'r0') return; // header row
+
+    const cells = {};
+    row.querySelectorAll('td[data-type]').forEach(td => {
+      cells[td.getAttribute('data-type')] = td.textContent.trim();
+    });
+
+    if (!cells['no']) return; // skip if no kart number
+
+    const driver = {
+      id: dataId,
+      pos: parseInt(cells['rk']) || 0,
+      kart: cells['no'] || '',
+      driver: cells['dr'] || '',
+      s1: cells['s1'] || '—',
+      s2: cells['s2'] || '—',
+      s3: cells['s3'] || '—',
+      lastLap: cells['llp'] || '—',
+      bestLap: cells['blp'] || '—',
+      gap: cells['gap'] || '',
+      interval: cells['int'] || '',
+      laps: parseInt(cells['tlp']) || 0,
+      status: cells['sta'] || '',
+      group: cells['grp'] || '',
+      isPit: row.classList.contains('pit') || cells['sta'] === 'pit',
+    };
+
+    drivers.push(driver);
+  });
+
+  // Sort by position
+  drivers.sort((a, b) => {
+    if (a.pos === 0 && b.pos !== 0) return 1;
+    if (b.pos === 0 && a.pos !== 0) return -1;
+    return a.pos - b.pos;
+  });
+
+  // Re-assign positions based on sort order if missing
+  drivers.forEach((d, i) => {
+    if (d.pos === 0) d.pos = i + 1;
+  });
+
+  state.drivers = drivers;
+
+  // Find my kart
+  state.myDriver = drivers.find(d => d.kart === state.myKart) || null;
+
+  // Update my laps history if we have a new lap
+  if (state.myDriver && state.myDriver.lastLap && state.myDriver.lastLap !== '—') {
+    recordMyLap(state.myDriver.lastLap, state.myDriver);
+  }
+
+  // Reset row update counters on full grid refresh
+  rowUpdateCounters = {};
+
+  // Compute gaps to adjacent positions
+  computeAdjacentGaps(drivers);
+
+  // Render
+  renderDashboard();
+  renderLeaderboard(drivers);
+  renderLaps();
+  showDashContent();
+}
+
+function showDashContent() {
+  const connecting = document.getElementById('dash-connecting');
+  const content = document.getElementById('dash-content');
+  if (connecting) connecting.style.display = 'none';
+  if (content) {
+    content.style.display = 'flex';
+    content.style.flexDirection = 'column';
+    content.style.gap = '10px';
+  }
+}
+
+function recordMyLap(lapTime, driver) {
+  const lapNum = driver.laps;
+  if (!lapTime || lapTime === '—') return;
+  if (state.myLaps.find(l => l.lap === lapNum && l.time === lapTime)) return;
+  state.myLaps.unshift({
+    lap: lapNum,
+    time: lapTime,
+    s1: driver.s1,
+    s2: driver.s2,
+    s3: driver.s3
+  });
+  if (state.myLaps.length > 50) state.myLaps.pop();
+}
+
+// ============================================================
+//  GAP COMPUTATION
+// ============================================================
+function computeAdjacentGaps(drivers) {
+  if (!state.myDriver) return;
+
+  const myPos = state.myDriver.pos;
+  const ahead = drivers.find(d => d.pos === myPos - 1);
+  const behind = drivers.find(d => d.pos === myPos + 1);
+
+  state.driverAhead = ahead || null;
+  state.driverBehind = behind || null;
+}
+
+// ============================================================
+//  DASHBOARD RENDER
+// ============================================================
+function renderDashboard() {
+  const me = state.myDriver;
+
+  if (!me) {
+    // Kart not found in session
+    document.getElementById('pos-number').textContent = '—';
+    document.getElementById('driver-name').textContent = `Kart ${state.myKart} no encontrado`;
+    document.getElementById('pos-card').style.borderColor = 'var(--red)';
+    return;
+  }
+
+  document.getElementById('pos-card').style.borderColor = 'var(--yellow)';
+
+  // Position
+  const posEl = document.getElementById('pos-number');
+  const pos = me.pos;
+  posEl.textContent = pos;
+  posEl.className = 'pos-number';
+  if (pos === 1) posEl.classList.add('p1');
+  else if (pos === 2) posEl.classList.add('p2');
+  else if (pos === 3) posEl.classList.add('p3');
+
+  // Driver name
+  document.getElementById('driver-name').textContent = me.driver || `Kart ${me.kart}`;
+
+  // Last lap
+  const lastEl = document.getElementById('last-lap');
+  lastEl.textContent = me.lastLap || '—';
+  lastEl.className = 'stat-value time';
+  if (me.lastLap && me.bestLap && me.lastLap === me.bestLap) {
+    lastEl.classList.add('t-purple');
+  } else {
+    lastEl.classList.add('white');
+  }
+
+  // Best lap
+  document.getElementById('best-lap').textContent = me.bestLap || '—';
+
+  // Lap count
+  document.getElementById('lap-count').textContent = me.laps || '—';
+
+  // Total drivers
+  document.getElementById('total-drivers').textContent = state.drivers.length || '—';
+
+  // Gaps
+  renderGaps(me);
+
+  // Sectors
+  document.getElementById('s1').textContent = me.s1 || '—';
+  document.getElementById('s2').textContent = me.s2 || '—';
+  document.getElementById('s3').textContent = me.s3 || '—';
+}
+
+function renderGaps(me) {
+  const aheadEl = document.getElementById('gap-ahead');
+  const behindEl = document.getElementById('gap-behind');
+  const aheadKartEl = document.getElementById('gap-ahead-kart');
+  const behindKartEl = document.getElementById('gap-behind-kart');
+
+  if (state.driverAhead) {
+    // Gap is from my interval field (gap to driver immediately ahead)
+    const gap = me.interval || me.gap || '—';
+    aheadEl.textContent = gap;
+    aheadEl.className = 'gap-value ahead';
+    aheadKartEl.textContent = `K${state.driverAhead.kart} • P${state.driverAhead.pos}`;
+  } else if (me.pos === 1) {
+    aheadEl.textContent = '🥇';
+    aheadEl.className = 'gap-value leader';
+    aheadKartEl.textContent = 'LÍDER';
+  } else {
+    aheadEl.textContent = '—';
+    aheadEl.className = 'gap-value ahead';
+    aheadKartEl.textContent = '';
+  }
+
+  if (state.driverBehind) {
+    // Behind driver's interval is their gap to me
+    const gap = state.driverBehind.interval || '—';
+    behindEl.textContent = gap;
+    behindEl.className = 'gap-value behind';
+    behindKartEl.textContent = `K${state.driverBehind.kart} • P${state.driverBehind.pos}`;
+  } else {
+    behindEl.textContent = '—';
+    behindEl.className = 'gap-value behind';
+    behindKartEl.textContent = me.pos === state.drivers.length ? 'ÚLTIMO' : '';
+  }
+}
+
+// ============================================================
+//  LEADERBOARD RENDER
+// ============================================================
+function renderLeaderboard(drivers) {
+  const body = document.getElementById('board-body');
+  if (!drivers || drivers.length === 0) {
+    body.innerHTML = `<div class="empty-state"><div class="icon">📡</div><div class="msg">Esperando datos...</div></div>`;
+    return;
+  }
+
+  const rows = drivers.map(d => {
+    const isMe = d.kart === state.myKart;
+    const posClass = d.pos === 1 ? 'p1' : d.pos === 2 ? 'p2' : d.pos === 3 ? 'p3' : '';
+
+    return `<div class="board-row ${isMe ? 'my-kart' : ''} ${d.isPit ? 'pit-row' : ''}">
+      <div class="board-pos ${posClass}">${d.pos}</div>
+      <div class="board-kart ${isMe ? 'my-k' : ''}">${d.kart}</div>
+      <div class="board-driver">${escHtml(d.driver)}${d.isPit ? ' <span class="state-pit">PIT</span>' : ''}</div>
+      <div class="board-lap">${d.lastLap}</div>
+      <div class="board-best">${d.bestLap}</div>
+      <div class="board-laps-count">${d.laps}</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = rows;
+
+  // Auto-scroll to my kart
+  const myRow = body.querySelector('.my-kart');
+  if (myRow) {
+    myRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+// ============================================================
+//  LAPS RENDER
+// ============================================================
+function renderLaps() {
+  const content = document.getElementById('laps-content');
+  const laps = state.myLaps;
+
+  if (!laps || laps.length === 0) {
+    content.innerHTML = `<div class="empty-state"><div class="icon">🕐</div><div class="msg">Las vueltas aparecerán cuando empiece la sesión</div></div>`;
+    return;
+  }
+
+  // Find best lap
+  const bestTime = laps.reduce((best, l) => {
+    if (!best || compareTime(l.time, best) < 0) return l.time;
+    return best;
+  }, null);
+
+  const rows = laps.map((l, i) => {
+    const isBest = l.time === bestTime;
+    const isLast = i === 0;
+    return `<tr class="${isBest ? 'lap-best-row' : ''} ${isLast ? 'lap-last-row' : ''}">
+      <td>Vta ${l.lap}</td>
+      <td>${l.s1 || '—'}</td>
+      <td>${l.s2 || '—'}</td>
+      <td>${l.s3 || '—'}</td>
+      <td>${l.time}${isBest ? ' <span class="best-tag">MEJOR</span>' : ''}</td>
+    </tr>`;
+  }).join('');
+
+  content.innerHTML = `
+    <table class="laps-table">
+      <thead>
+        <tr>
+          <th>Vuelta</th>
+          <th>S1</th>
+          <th>S2</th>
+          <th>S3</th>
+          <th>Tiempo</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>`;
+}
+
+// ============================================================
+//  CONNECTION STATUS
+// ============================================================
+function setConnected(ok) {
+  state.connected = ok;
+  const badge = document.getElementById('conn-badge');
+  badge.textContent = ok ? 'LIVE' : 'LOST';
+  badge.className = 'conn-badge ' + (ok ? 'ok' : 'err');
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function compareTime(a, b) {
+  // Compare time strings like "1:23.456" or "45.678"
+  const parseT = t => {
+    if (!t || t === '—') return Infinity;
+    const parts = t.split(':');
+    if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    return parseFloat(t);
+  };
+  return parseT(a) - parseT(b);
+}
+</script>
+</body>
+</html>
