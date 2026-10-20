@@ -1,15 +1,15 @@
-const CACHE_NAME = 'kartdash-v2';
+const CACHE_NAME = 'kart-timing-v3';
 const ASSETS = [
   './',
   './index.html',
-  './public/manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(err => console.log('SW cache error (ignored):', err));
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).catch(() => {})
   );
   self.skipWaiting();
 });
@@ -26,7 +26,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.url.includes('live-data.apex-timing.com') ||
       event.request.url.includes('live_ajax.php')) {
-    return;
+    return; // Don't cache live timing queries
   }
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).catch(() => cached))

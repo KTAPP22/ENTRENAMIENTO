@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Live Timing" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#000000" />
-  <link rel="manifest" href="./public/manifest.json" />
-  <title>KartDash 🏎️ Live Timing</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <title>Live Timing</title>
 
   <style>
     /* ============================================================
-       RESET & BASE (OLED Ultra-Black Theme)
+       BASE & RESET (OLED Ultra-Black Theme)
        ============================================================ */
     *, *::before, *::after {
       box-sizing: border-box;
@@ -25,25 +27,22 @@
     :root {
       --bg: #000000;
       --bg-card: #080808;
-      --bg-card-alt: #101010;
-      --border: #222222;
-      --border-bright: #3a3a3a;
+      --bg-card-alt: #121212;
+      --border: #202020;
+      --border-bright: #383838;
       --text: #ffffff;
-      --muted: #777777;
+      --muted: #707070;
 
-      /* Racing Telemetry Colors */
-      --green-gain: #00E676;       /* Ganando tiempo */
+      /* Telemetría */
+      --green: #00E676;
       --green-glow: rgba(0, 230, 118, 0.4);
-      --red-loss: #FF1744;         /* Perdiendo tiempo */
+      --red: #FF1744;
       --red-glow: rgba(255, 23, 68, 0.4);
-      --purple-pb: #D500F9;        /* Récord / Mejor Vuelta */
+      --purple: #D500F9;
       --purple-glow: rgba(213, 0, 249, 0.4);
-      --gold: #FFD700;             /* P1 / Líder */
-      --cyan: #00E5FF;             /* Info / Vueltas */
-      --orange: #FF9100;
-
+      --gold: #FFD700;
+      --cyan: #00E5FF;
       --font-mono: 'SF Mono', 'Roboto Mono', 'Courier New', monospace;
-      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     html, body {
@@ -57,7 +56,7 @@
     }
 
     /* ============================================================
-       PORTRAIT ROTATE WARNING OVERLAY (Móvil en Horizontal Obligatorio)
+       AVISO HORIZONTAL (GIRA TU MÓVIL)
        ============================================================ */
     #rotate-overlay {
       display: none;
@@ -71,44 +70,30 @@
       justify-content: center;
       text-align: center;
       padding: 24px;
-      gap: 20px;
+      gap: 16px;
     }
-
-    .rotate-device-icon {
-      font-size: 4rem;
-      animation: rotatePhone 2s ease-in-out infinite;
+    .rotate-icon {
+      font-size: 3.5rem;
+      animation: rotPhone 2s ease-in-out infinite;
     }
-
-    @keyframes rotatePhone {
-      0%, 10% { transform: rotate(0deg); }
-      40%, 60% { transform: rotate(90deg); }
-      90%, 100% { transform: rotate(0deg); }
+    @keyframes rotPhone {
+      0%, 15% { transform: rotate(0deg); }
+      50%, 65% { transform: rotate(90deg); }
+      100% { transform: rotate(0deg); }
     }
-
     .rotate-title {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 900;
       color: var(--gold);
       letter-spacing: 2px;
       text-transform: uppercase;
     }
-
-    .rotate-desc {
-      font-size: 0.9rem;
-      color: var(--muted);
-      max-width: 380px;
-      line-height: 1.4;
-      font-family: var(--font-sans);
-    }
-
     @media (orientation: portrait) {
-      #rotate-overlay {
-        display: flex;
-      }
+      #rotate-overlay { display: flex; }
     }
 
     /* ============================================================
-       SCREENS CONTAINER
+       SCREENS
        ============================================================ */
     .screen {
       display: none;
@@ -121,110 +106,82 @@
     }
 
     /* ============================================================
-       SPLASH SCREEN (Configuración Horizontal)
+       PANTALLA DE INICIO (MINIMALISTA, SIN TEXTOS INNECESARIOS)
        ============================================================ */
     #splash {
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, #111111 0%, #000000 100%);
-      padding: 20px;
-      gap: 30px;
+      background: #000000;
+      padding: 16px 24px;
+      gap: 20px;
     }
 
-    .splash-left {
-      flex: 1;
+    .splash-box {
+      width: 100%;
+      max-width: 620px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
       gap: 12px;
-      border-right: 1px solid var(--border);
-      padding-right: 20px;
-      max-width: 320px;
+      background: #060606;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
     }
 
-    .splash-badge {
-      font-size: 0.7rem;
-      color: #000;
-      background: var(--gold);
-      font-weight: 900;
-      padding: 3px 10px;
-      border-radius: 20px;
-      letter-spacing: 2px;
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
     }
 
-    .splash-title {
-      font-size: 2.2rem;
-      font-weight: 900;
-      letter-spacing: 4px;
-      color: var(--gold);
-      line-height: 1;
+    .field-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .splash-sub {
-      font-size: 0.75rem;
+    .field-tag {
+      font-size: 0.6rem;
       color: var(--muted);
       letter-spacing: 1.5px;
-    }
-
-    .splash-right {
-      flex: 1.4;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      max-width: 440px;
-    }
-
-    .field-label {
-      font-size: 0.65rem;
-      letter-spacing: 2px;
-      color: var(--muted);
       text-transform: uppercase;
       font-weight: bold;
     }
 
-    .field-row {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .custom-select, .custom-input {
+    .ctrl-select, .ctrl-input {
       background: var(--bg-card);
       border: 2px solid var(--border);
       border-radius: 8px;
       color: #ffffff;
       font-family: var(--font-mono);
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: bold;
       padding: 12px 14px;
       outline: none;
       width: 100%;
       transition: border-color 0.2s;
     }
-
-    .custom-select:focus, .custom-input:focus {
+    .ctrl-select:focus, .ctrl-input:focus {
       border-color: var(--gold);
     }
 
-    .kart-input-lg {
-      font-size: 2.2rem;
+    .ctrl-kart {
+      font-size: 1.8rem;
       font-weight: 900;
       text-align: center;
-      letter-spacing: 6px;
-      padding: 10px;
+      letter-spacing: 4px;
       color: var(--gold);
+      padding: 6px;
     }
 
-    .buttons-group {
+    .action-row {
       display: flex;
       gap: 10px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
-    .btn-action {
+    .btn-main {
       flex: 2;
       background: var(--gold);
       border: none;
@@ -232,49 +189,57 @@
       color: #000000;
       cursor: pointer;
       font-family: var(--font-mono);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 900;
       letter-spacing: 2px;
       padding: 14px;
       text-transform: uppercase;
       transition: transform 0.1s, opacity 0.2s;
     }
-
-    .btn-action:active {
+    .btn-main:active {
       transform: scale(0.98);
       opacity: 0.85;
     }
 
-    .btn-sim {
-      flex: 1.2;
-      background: #1c1c1c;
+    .btn-sub {
+      flex: 1;
+      background: #141414;
       border: 1px solid var(--border-bright);
       border-radius: 8px;
-      color: var(--cyan);
+      color: #ffffff;
       cursor: pointer;
       font-family: var(--font-mono);
       font-size: 0.8rem;
       font-weight: bold;
       letter-spacing: 1px;
-      padding: 14px 8px;
+      padding: 12px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       text-transform: uppercase;
       transition: background 0.2s;
     }
+    .btn-sub:active {
+      background: #252525;
+    }
 
-    .btn-sim:active {
-      background: #2a2a2a;
+    .btn-install {
+      background: rgba(0, 230, 118, 0.15);
+      border-color: var(--green);
+      color: var(--green);
     }
 
     /* ============================================================
-       MAIN PILOT HUD (100% Horizontal Cockpit Layout)
+       MAIN COCKPIT HUD (HORIZONTAL)
        ============================================================ */
     #app {
       flex-direction: column;
       background: #000000;
     }
 
-    /* Top Slim Telemetry Bar */
-    .top-telemetry-bar {
+    /* Barra Superior de Estado */
+    .telemetry-topbar {
       height: 38px;
       background: #050505;
       border-bottom: 1px solid var(--border);
@@ -286,92 +251,92 @@
       font-size: 0.75rem;
     }
 
-    .bar-left {
+    .bar-left, .bar-right {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .flag-indicator {
+    .flag-bullet {
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: #555555;
+      background: #444;
+      transition: background 0.3s, box-shadow 0.3s;
     }
-    .flag-indicator.green {
-      background: var(--green-gain);
-      box-shadow: 0 0 10px var(--green-glow);
+    .flag-bullet.green {
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green-glow);
     }
-    .flag-indicator.yellow {
+    .flag-bullet.yellow {
       background: var(--gold);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
     }
-    .flag-indicator.red {
-      background: var(--red-loss);
-      box-shadow: 0 0 10px var(--red-glow);
+    .flag-bullet.red {
+      background: var(--red);
+      box-shadow: 0 0 12px var(--red-glow);
+    }
+    .flag-bullet.checkered {
+      background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 50% / 7px 7px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
     }
 
-    .circuit-title {
+    .circuit-name {
       color: #ffffff;
       font-weight: bold;
       letter-spacing: 1px;
       text-transform: uppercase;
     }
 
-    .bar-center {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.7rem;
-      color: var(--muted);
-      letter-spacing: 1px;
-    }
-
-    .bar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .status-badge {
+    .badge-status {
       font-size: 0.65rem;
       font-weight: 900;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 4px;
       letter-spacing: 1px;
     }
-    .status-badge.live {
+    .badge-status.waiting {
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+    .badge-status.recording {
       background: rgba(0, 230, 118, 0.2);
-      color: var(--green-gain);
-      border: 1px solid var(--green-gain);
+      color: var(--green);
+      border: 1px solid var(--green);
+      animation: recPulse 1.5s infinite;
     }
-    .status-badge.sim {
-      background: rgba(0, 229, 255, 0.2);
-      color: var(--cyan);
-      border: 1px solid var(--cyan);
+    .badge-status.finished {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      border: 1px solid #ffffff;
     }
-    .status-badge.lost {
-      background: rgba(255, 23, 68, 0.2);
-      color: var(--red-loss);
-      border: 1px solid var(--red-loss);
+    @keyframes recPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
-    .btn-nav-icon {
-      background: transparent;
+    .btn-top {
+      background: #111;
       border: 1px solid var(--border);
       border-radius: 4px;
       color: var(--muted);
       cursor: pointer;
-      font-size: 0.85rem;
-      padding: 3px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 4px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
-    .btn-nav-icon:active {
-      color: #ffffff;
-      border-color: #ffffff;
+    .btn-top:active, .btn-top.active {
+      color: var(--gold);
+      border-color: var(--gold);
     }
 
-    /* Cockpit Main Body: 3-Column Split */
-    .cockpit-body {
+    /* Cockpit Body (3 Columnas) */
+    .cockpit-grid {
       flex: 1;
       display: flex;
       flex-direction: row;
@@ -380,15 +345,15 @@
       gap: 10px;
     }
 
-    /* LEFT COLUMN: Position + Laps (20% Width) */
-    .col-left {
+    /* Columna Izquierda: Posición y Vueltas (20%) */
+    .cockpit-left {
       flex: 0 0 20%;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .telemetry-card {
+    .card-telem {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -398,24 +363,22 @@
       justify-content: center;
       text-align: center;
       padding: 8px;
-      position: relative;
     }
 
     .card-pos {
       flex: 1.4;
       border-color: var(--gold);
-      background: linear-gradient(180deg, #121005 0%, #080808 100%);
+      background: linear-gradient(180deg, #100e05 0%, #080808 100%);
     }
 
-    .pos-label {
-      font-size: 0.65rem;
+    .pos-lbl {
+      font-size: 0.6rem;
       letter-spacing: 2px;
       color: var(--gold);
-      text-transform: uppercase;
       font-weight: 900;
     }
 
-    .pos-val {
+    .pos-num {
       font-size: clamp(3rem, 7vw, 5.5rem);
       font-weight: 900;
       color: var(--gold);
@@ -423,14 +386,13 @@
       text-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
     }
 
-    .kart-num-tag {
-      font-size: 0.8rem;
+    .kart-tag {
+      font-size: 0.75rem;
       color: #ffffff;
       background: #1a1a1a;
-      padding: 2px 10px;
+      padding: 2px 8px;
       border-radius: 4px;
       margin-top: 4px;
-      letter-spacing: 1px;
       font-weight: 900;
     }
 
@@ -438,29 +400,29 @@
       flex: 1;
     }
 
-    .card-sub-label {
+    .laps-lbl {
       font-size: 0.6rem;
       letter-spacing: 1.5px;
       color: var(--muted);
-      text-transform: uppercase;
+      font-weight: bold;
     }
 
-    .laps-val {
+    .laps-num {
       font-size: clamp(2rem, 4.5vw, 3.2rem);
       font-weight: 900;
       color: var(--cyan);
       line-height: 1;
     }
 
-    /* CENTER COLUMN: THE HERO DELTA (56% Width) */
-    .col-center {
+    /* Columna Central: HERO DELTA (56%) */
+    .cockpit-center {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .hero-delta-card {
+    .hero-delta-box {
       flex: 1;
       background: #050505;
       border: 2px solid var(--border);
@@ -471,111 +433,79 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
-      padding: 10px;
+      padding: 8px;
       transition: background 0.3s, border-color 0.3s;
     }
 
-    /* Dynamic states for Delta Hero Card */
-    .hero-delta-card.gain {
-      border-color: var(--green-gain);
-      background: radial-gradient(circle at center, rgba(0, 230, 118, 0.12) 0%, #050505 85%);
+    .hero-delta-box.gain {
+      border-color: var(--green);
+      background: radial-gradient(circle at center, rgba(0, 230, 118, 0.14) 0%, #050505 85%);
       box-shadow: inset 0 0 40px rgba(0, 230, 118, 0.15);
     }
-
-    .hero-delta-card.loss {
-      border-color: var(--red-loss);
-      background: radial-gradient(circle at center, rgba(255, 23, 68, 0.12) 0%, #050505 85%);
+    .hero-delta-box.loss {
+      border-color: var(--red);
+      background: radial-gradient(circle at center, rgba(255, 23, 68, 0.14) 0%, #050505 85%);
       box-shadow: inset 0 0 40px rgba(255, 23, 68, 0.15);
     }
-
-    .hero-delta-card.pb {
-      border-color: var(--purple-pb);
-      background: radial-gradient(circle at center, rgba(213, 0, 249, 0.18) 0%, #050505 85%);
+    .hero-delta-box.pb {
+      border-color: var(--purple);
+      background: radial-gradient(circle at center, rgba(213, 0, 249, 0.20) 0%, #050505 85%);
       box-shadow: inset 0 0 40px rgba(213, 0, 249, 0.25);
     }
 
-    .sector-live-badge {
-      font-size: 0.8rem;
+    .hero-stage-badge {
+      font-size: 0.75rem;
       font-weight: 900;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      padding: 4px 16px;
+      padding: 4px 14px;
       border-radius: 30px;
-      background: #181818;
-      color: var(--text);
-      margin-bottom: 4px;
+      background: #151515;
+      color: #ffffff;
+      margin-bottom: 2px;
       border: 1px solid var(--border-bright);
     }
 
-    .sector-live-badge.pulse {
-      animation: badgePulse 0.8s ease-in-out;
-    }
-
-    @keyframes badgePulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-
-    /* Giant Delta Value */
-    .delta-number {
+    .hero-delta-val {
       font-size: clamp(4.8rem, 13vw, 8.5rem);
       font-weight: 900;
       letter-spacing: -2px;
       line-height: 0.9;
-      font-family: var(--font-mono);
-      transition: color 0.2s, transform 0.2s;
     }
-
-    .delta-number.gain {
-      color: var(--green-gain);
+    .hero-delta-val.gain {
+      color: var(--green);
       text-shadow: 0 0 45px var(--green-glow);
     }
-
-    .delta-number.loss {
-      color: var(--red-loss);
+    .hero-delta-val.loss {
+      color: var(--red);
       text-shadow: 0 0 45px var(--red-glow);
     }
-
-    .delta-number.pb {
-      color: var(--purple-pb);
+    .hero-delta-val.pb {
+      color: var(--purple);
       text-shadow: 0 0 50px var(--purple-glow);
     }
-
-    .delta-number.neutral {
-      color: #666666;
+    .hero-delta-val.neutral {
+      color: #555555;
     }
 
-    /* Gain/Loss text descriptor */
-    .delta-descriptor {
-      font-size: clamp(1rem, 2.2vw, 1.4rem);
+    .hero-delta-desc {
+      font-size: clamp(0.9rem, 2vw, 1.3rem);
       font-weight: 900;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      margin-top: 6px;
+      margin-top: 4px;
     }
+    .hero-delta-desc.gain { color: var(--green); }
+    .hero-delta-desc.loss { color: var(--red); }
+    .hero-delta-desc.pb { color: var(--purple); }
+    .hero-delta-desc.neutral { color: var(--muted); }
 
-    .delta-descriptor.gain {
-      color: var(--green-gain);
-    }
-    .delta-descriptor.loss {
-      color: var(--red-loss);
-    }
-    .delta-descriptor.pb {
-      color: var(--purple-pb);
-    }
-    .delta-descriptor.neutral {
-      color: var(--muted);
-    }
-
-    /* Sub-bar inside Center Column */
-    .center-sub-bar {
-      height: 48px;
+    .bottom-pills {
+      height: 44px;
       display: flex;
       gap: 8px;
     }
-
-    .last-lap-pill {
+    .pill-card {
       flex: 1;
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -585,32 +515,29 @@
       justify-content: space-between;
       padding: 0 14px;
     }
-
-    .pill-label {
-      font-size: 0.65rem;
-      letter-spacing: 1.5px;
+    .pill-tag {
+      font-size: 0.6rem;
       color: var(--muted);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      font-weight: bold;
     }
-
-    .pill-value {
+    .pill-val {
       font-size: 1.15rem;
       font-weight: 900;
-      letter-spacing: 1px;
       color: #ffffff;
     }
-    .pill-value.green { color: var(--green-gain); }
-    .pill-value.purple { color: var(--purple-pb); }
+    .pill-val.pb { color: var(--purple); }
 
-    /* RIGHT COLUMN: 3 SECTORS (S1, S2, S3) (24% Width) */
-    .col-right {
+    /* Columna Derecha: Sectores S1, S2, S3 (24%) */
+    .cockpit-right {
       flex: 0 0 24%;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .sector-box {
+    .sec-card {
       flex: 1;
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -619,87 +546,66 @@
       flex-direction: column;
       justify-content: center;
       padding: 6px 12px;
-      position: relative;
-      transition: border-color 0.3s, background 0.3s, transform 0.2s;
+      transition: border-color 0.3s, background 0.3s;
     }
+    .sec-card.gain { border-left: 4px solid var(--green); }
+    .sec-card.loss { border-left: 4px solid var(--red); }
+    .sec-card.pb { border-left: 4px solid var(--purple); }
 
-    .sector-box.active-flash {
-      border-color: var(--gold) !important;
-      background: #191605 !important;
-      transform: scale(1.02);
-    }
-
-    .sector-box.gain {
-      border-left: 4px solid var(--green-gain);
-    }
-    .sector-box.loss {
-      border-left: 4px solid var(--red-loss);
-    }
-    .sector-box.pb {
-      border-left: 4px solid var(--purple-pb);
-    }
-
-    .sector-box-header {
+    .sec-card-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 2px;
     }
-
-    .sec-tag {
-      font-size: 0.75rem;
+    .sec-name {
+      font-size: 0.7rem;
       font-weight: 900;
-      letter-spacing: 1px;
       color: var(--muted);
+      letter-spacing: 1px;
     }
-    .sector-box.gain .sec-tag { color: var(--green-gain); }
-    .sector-box.loss .sec-tag { color: var(--red-loss); }
-    .sector-box.pb .sec-tag { color: var(--purple-pb); }
-
-    .sec-delta {
+    .sec-delta-tag {
       font-size: 0.75rem;
       font-weight: 900;
-      letter-spacing: 0.5px;
     }
-    .sec-delta.gain { color: var(--green-gain); }
-    .sec-delta.loss { color: var(--red-loss); }
-    .sec-delta.pb { color: var(--purple-pb); }
+    .sec-delta-tag.gain { color: var(--green); }
+    .sec-delta-tag.loss { color: var(--red); }
+    .sec-delta-tag.pb { color: var(--purple); }
 
-    .sec-time {
+    .sec-time-val {
       font-size: clamp(1.2rem, 2.2vw, 1.6rem);
       font-weight: 900;
       color: #ffffff;
-      letter-spacing: 0.5px;
       line-height: 1;
     }
 
-    /* Flash animation on passing loop */
-    @keyframes sectorFlashAnimation {
-      0% { background: #333333; }
+    /* Flash sector animation */
+    @keyframes secPulseAnim {
+      0% { background: #333; }
       100% { background: var(--bg-card); }
     }
-    .sector-flash {
-      animation: sectorFlashAnimation 0.9s ease-out;
+    .sec-flash {
+      animation: secPulseAnim 0.8s ease-out;
     }
 
     /* ============================================================
-       LEADERBOARD MODAL (Pit Lane View)
+       MODAL DE SESIONES (HISTORIAL COMPLETO Y VUELTA A VUELTA)
        ============================================================ */
-    #board-modal {
+    #sessions-modal {
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 9999;
-      background: rgba(0, 0, 0, 0.95);
+      z-index: 99999;
+      background: rgba(0, 0, 0, 0.96);
       backdrop-filter: blur(8px);
       flex-direction: column;
-      padding: 12px;
+      padding: 12px 18px;
     }
-    #board-modal.open {
+    #sessions-modal.open {
       display: flex;
     }
 
-    .modal-head {
+    .modal-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -707,207 +613,271 @@
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-
-    .modal-title {
+    .modal-hdr {
       font-size: 1.1rem;
       font-weight: 900;
       color: var(--gold);
       letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .modal-body {
+    .sessions-layout {
+      flex: 1;
+      display: flex;
+      gap: 14px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    /* Lista lateral de sesiones */
+    .sessions-sidebar {
+      flex: 0 0 280px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding-right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .session-item.selected {
+      border-color: var(--gold);
+      background: #151305;
+    }
+    .session-item-date {
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+    }
+    .session-item-sub {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .session-item-best {
+      font-size: 0.75rem;
+      color: var(--purple);
+      font-weight: 900;
+    }
+
+    /* Detalle de vueltas de la sesión */
+    .session-detail-view {
       flex: 1;
       overflow-y: auto;
-      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .grid-table {
+    .session-summary-bar {
+      background: #0c0c0c;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .laps-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
     }
-
-    .grid-table th {
-      padding: 8px;
+    .laps-table th {
+      padding: 8px 10px;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
-      text-align: left;
+      text-align: right;
       font-size: 0.65rem;
       letter-spacing: 1.5px;
     }
-
-    .grid-table td {
-      padding: 8px;
+    .laps-table th:first-child { text-align: left; }
+    .laps-table td {
+      padding: 8px 10px;
       border-bottom: 1px solid #141414;
+      text-align: right;
+      font-weight: 700;
     }
-
-    .grid-table tr.my-kart {
-      background: rgba(255, 215, 0, 0.1);
-      border-left: 3px solid var(--gold);
+    .laps-table td:first-child { text-align: left; color: var(--muted); }
+    .laps-table tr.best-lap-row td {
+      color: var(--purple);
+      background: rgba(213, 0, 249, 0.08);
       font-weight: 900;
     }
-    .grid-table tr.my-kart td {
-      color: var(--gold);
+
+    /* Modal de ayuda iOS para instalar */
+    #ios-install-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: rgba(0, 0, 0, 0.95);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      gap: 16px;
+    }
+    #ios-install-modal.open { display: flex; }
+    .ios-box {
+      background: #111;
+      border: 1px solid var(--border-bright);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
   </style>
 </head>
 <body>
 
   <!-- ============================================================
-       PORTRAIT WARNING: FORZAR APARATO EN HORIZONTAL
+       AVISO ORIENTACIÓN HORIZONTAL
        ============================================================ -->
   <div id="rotate-overlay">
-    <div class="rotate-device-icon">📱 ➔ 🔄</div>
-    <div class="rotate-title">GIRA EL MÓVIL EN HORIZONTAL</div>
-    <div class="rotate-desc">
-      Esta aplicación está optimizada exclusivamente para el soporte del volante en pista.
-    </div>
+    <div class="rotate-icon">📱 ➔ 🔄</div>
+    <div class="rotate-title">COLOCA EL MÓVIL EN HORIZONTAL</div>
   </div>
 
   <!-- ============================================================
-       PANTALLA DE INICIO (Configuración de Circuito y Kart)
+       PANTALLA DE INICIO (LIMPIA, SIN TEXTOS DECORATIVOS)
        ============================================================ -->
   <div class="screen active" id="splash">
-    <div class="splash-left">
-      <div class="splash-badge">KART TELEMETRY</div>
-      <div class="splash-title">KartDash</div>
-      <div class="splash-sub">Delta Live Timing en Volante</div>
-      <div style="font-size: 0.65rem; color: #444; margin-top: 10px;">
-        Optimizado para vistazos a más de 80 km/h
-      </div>
-    </div>
+    <div class="splash-box">
+      <!-- Selector de Circuito y Kart -->
+      <div class="form-grid">
+        <div class="field-wrap">
+          <label class="field-tag" for="circuit-select">CIRCUITO</label>
+          <select class="ctrl-select" id="circuit-select" onchange="onCircuitChange()">
+            <option value="kartcenter-campillos" selected>Kartcenter Campillos</option>
+            <option value="karting-sevilla">Karting Sevilla</option>
+            <option value="zuera">Circuito Zuera</option>
+            <option value="lucas-guerrero">Lucas Guerrero (Chiva)</option>
+            <option value="custom">URL personalizada</option>
+          </select>
+        </div>
 
-    <div class="splash-right">
-      <!-- Selector de Circuito -->
-      <div class="field-row">
-        <label class="field-label" for="circuit-select">🏁 CIRCUITO APEX TIMING</label>
-        <select class="custom-select" id="circuit-select" onchange="onCircuitChange()">
-          <option value="kartcenter-campillos" selected>Kartcenter Campillos (Málaga)</option>
-          <option value="karting-sevilla">Karting Sevilla (Alcalá del Río)</option>
-          <option value="zuera">Circuito Int. Zuera (Zaragoza)</option>
-          <option value="lucas-guerrero">Kartódromo Lucas Guerrero (Chiva)</option>
-          <option value="custom">-- Introducir URL personalizada --</option>
-        </select>
+        <div class="field-wrap">
+          <label class="field-tag" for="kart-input">Nº KART</label>
+          <input class="ctrl-input ctrl-kart" id="kart-input" type="number" min="1" max="999" placeholder="--" inputmode="numeric" />
+        </div>
       </div>
 
-      <!-- URL Personalizada (Oculta por defecto) -->
-      <div class="field-row" id="custom-url-row" style="display: none;">
-        <label class="field-label" for="custom-url-input">🔗 URL LIVE TIMING APEX</label>
-        <input class="custom-input" id="custom-url-input" type="url" placeholder="https://www.apex-timing.com/live-timing/..." />
-      </div>
-
-      <!-- Número de Kart -->
-      <div class="field-row">
-        <label class="field-label" for="kart-input">🔢 TU NÚMERO DE KART</label>
-        <input class="custom-input kart-input-lg" id="kart-input" type="number" min="1" max="999" placeholder="Nº" inputmode="numeric" />
+      <!-- URL Personalizada (si se selecciona) -->
+      <div class="field-wrap" id="custom-url-row" style="display: none;">
+        <input class="ctrl-input" id="custom-url-input" type="url" placeholder="https://www.apex-timing.com/live-timing/..." />
       </div>
 
       <!-- Botones de Acción -->
-      <div class="buttons-group">
-        <button class="btn-action" onclick="startApp(false)">⚡ SALIR A PISTA</button>
-        <button class="btn-sim" onclick="startApp(true)" title="Prueba los sectores y deltas sin estar en carrera">🧪 MODO TEST</button>
+      <div class="action-row">
+        <button class="btn-main" onclick="startApp(false)">⚡ ENTRAR EN PISTA</button>
+        <button class="btn-sub btn-install" id="btn-pwa-install" onclick="triggerPWAInstall()" title="Añadir icono a la pantalla de inicio del móvil">📲 INSTALAR APP</button>
+        <button class="btn-sub" onclick="openSessionsModal()" title="Historial de sesiones">📋 SESIONES</button>
+        <button class="btn-sub" onclick="startApp(true)" title="Probar sectores y banderas">🧪 TEST</button>
       </div>
     </div>
   </div>
 
   <!-- ============================================================
-       MAIN COCKPIT HUD (DASHBOARD HORIZONTAL DE CARRERA)
+       COCKPIT TELEMETRY HUD (HORIZONTAL)
        ============================================================ -->
   <div class="screen" id="app">
 
-    <!-- Top Status Bar -->
-    <div class="top-telemetry-bar">
+    <!-- Top Telemetry Bar -->
+    <div class="telemetry-topbar">
       <div class="bar-left">
-        <div class="flag-indicator green" id="flag-indicator"></div>
-        <div class="circuit-title" id="bar-circuit-name">Kartcenter Campillos</div>
-      </div>
-
-      <div class="bar-center">
-        <span id="session-category">JUNIOR/SENIOR</span>
-        <span>•</span>
-        <span id="clock-display">--:--</span>
+        <div class="flag-bullet" id="flag-bullet"></div>
+        <div class="circuit-name" id="hud-circuit-name">Kartcenter Campillos</div>
       </div>
 
       <div class="bar-right">
-        <div class="status-badge live" id="connection-badge">LIVE</div>
-        <button class="btn-nav-icon" onclick="openBoardModal()" title="Ver Clasificación Completa">📊 TABLA</button>
-        <button class="btn-nav-icon" onclick="toggleFullscreen()" title="Pantalla Completa">⛶</button>
-        <button class="btn-nav-icon" onclick="exitToHome()" title="Salir">✕</button>
+        <div class="badge-status waiting" id="session-status-badge">ESPERANDO BANDERA VERDE</div>
+        <button class="btn-top" onclick="openSessionsModal()">📋 SESIONES</button>
+        <button class="btn-top" onclick="toggleFullscreen()">⛶</button>
+        <button class="btn-top" onclick="exitToHome()">✕</button>
       </div>
     </div>
 
-    <!-- Cockpit Telemetry Body -->
-    <div class="cockpit-body">
+    <!-- Cockpit Telemetry Grid (3 Columnas) -->
+    <div class="cockpit-grid">
 
-      <!-- COLUMNA IZQUIERDA: Posición y Vuelta Actual -->
-      <div class="col-left">
-        <!-- Posición -->
-        <div class="telemetry-card card-pos">
-          <div class="pos-label">POSICIÓN</div>
-          <div class="pos-val" id="hud-pos">P--</div>
-          <div class="kart-num-tag" id="hud-kart-tag">KART --</div>
+      <!-- Columna Izquierda: Posición y Vueltas -->
+      <div class="cockpit-left">
+        <div class="card-telem card-pos">
+          <div class="pos-lbl">POSICIÓN</div>
+          <div class="pos-num" id="hud-pos">P--</div>
+          <div class="kart-tag" id="hud-kart-tag">KART --</div>
         </div>
 
-        <!-- Vuelta Actual -->
-        <div class="telemetry-card card-laps">
-          <div class="card-sub-label">VUELTA</div>
-          <div class="laps-val" id="hud-lap-count">--</div>
+        <div class="card-telem card-laps">
+          <div class="laps-lbl">VUELTA</div>
+          <div class="laps-num" id="hud-laps">--</div>
         </div>
       </div>
 
-      <!-- COLUMNA CENTRAL: HERO DELTA (GANANDO / PERDIENDO TIEMPO) -->
-      <div class="col-center">
-        <div class="hero-delta-card" id="hero-card">
-          <!-- Indicador de Sector actual / Meta -->
-          <div class="sector-live-badge" id="hero-sector-badge">ESPERANDO PASO POR META</div>
-
-          <!-- DELTA PRINCIPAL GIGANTE -->
-          <div class="delta-number neutral" id="hero-delta-val">--.---</div>
-
-          <!-- Descriptor Visual (GANANDO TIEMPO / PERDIENDO TIEMPO) -->
-          <div class="delta-descriptor neutral" id="hero-delta-desc">EN VUELTA</div>
+      <!-- Columna Central: HERO DELTA GIGANTE -->
+      <div class="cockpit-center">
+        <div class="hero-delta-box" id="hero-box">
+          <div class="hero-stage-badge" id="hero-stage">PRE-PARRILLA</div>
+          <div class="hero-delta-val neutral" id="hero-delta">--.---</div>
+          <div class="hero-delta-desc neutral" id="hero-desc">ESPERANDO BANDERA VERDE 🟢</div>
         </div>
 
-        <!-- Barra inferior: Mejor vuelta personal y última vuelta -->
-        <div class="center-sub-bar">
-          <div class="last-lap-pill">
-            <span class="pill-label">ÚLTIMA</span>
-            <span class="pill-value" id="hud-last-lap">--.---</span>
+        <div class="bottom-pills">
+          <div class="pill-card">
+            <span class="pill-tag">ÚLTIMA VUELTA</span>
+            <span class="pill-val" id="hud-last-lap">--.---</span>
           </div>
-          <div class="last-lap-pill">
-            <span class="pill-label">MEJOR (PB)</span>
-            <span class="pill-value purple" id="hud-best-lap">--.---</span>
+          <div class="pill-card">
+            <span class="pill-tag">MEJOR (PB)</span>
+            <span class="pill-val pb" id="hud-best-lap">--.---</span>
           </div>
         </div>
       </div>
 
-      <!-- COLUMNA DERECHA: LOS 3 SECTORES (S1, S2, S3) -->
-      <div class="col-right">
-        <!-- Sector 1 -->
-        <div class="sector-box" id="box-s1">
-          <div class="sector-box-header">
-            <span class="sec-tag">SECTOR 1</span>
-            <span class="sec-delta" id="delta-s1">--</span>
+      <!-- Columna Derecha: Sectores S1, S2, S3 -->
+      <div class="cockpit-right">
+        <div class="sec-card" id="card-s1">
+          <div class="sec-card-head">
+            <span class="sec-name">SECTOR 1</span>
+            <span class="sec-delta-tag" id="tag-s1">--</span>
           </div>
-          <div class="sec-time" id="time-s1">--.---</div>
+          <div class="sec-time-val" id="val-s1">--.---</div>
         </div>
 
-        <!-- Sector 2 -->
-        <div class="sector-box" id="box-s2">
-          <div class="sector-box-header">
-            <span class="sec-tag">SECTOR 2</span>
-            <span class="sec-delta" id="delta-s2">--</span>
+        <div class="sec-card" id="card-s2">
+          <div class="sec-card-head">
+            <span class="sec-name">SECTOR 2</span>
+            <span class="sec-delta-tag" id="tag-s2">--</span>
           </div>
-          <div class="sec-time" id="time-s2">--.---</div>
+          <div class="sec-time-val" id="val-s2">--.---</div>
         </div>
 
-        <!-- Sector 3 / Meta -->
-        <div class="sector-box" id="box-s3">
-          <div class="sector-box-header">
-            <span class="sec-tag">SECTOR 3</span>
-            <span class="sec-delta" id="delta-s3">--</span>
+        <div class="sec-card" id="card-s3">
+          <div class="sec-card-head">
+            <span class="sec-name">SECTOR 3</span>
+            <span class="sec-delta-tag" id="tag-s3">--</span>
           </div>
-          <div class="sec-time" id="time-s3">--.---</div>
+          <div class="sec-time-val" id="val-s3">--.---</div>
         </div>
       </div>
 
@@ -915,40 +885,51 @@
   </div>
 
   <!-- ============================================================
-       MODAL DE CLASIFICACIÓN COMPLETA (Para boxes / pit lane)
+       MODAL DE SESIONES (HISTORIAL COMPLETO Y VUELTA A VUELTA)
        ============================================================ -->
-  <div id="board-modal">
-    <div class="modal-head">
-      <div class="modal-title">CLASIFICACIÓN DE LA SESIÓN</div>
-      <button class="btn-nav-icon" onclick="closeBoardModal()" style="font-size: 1.1rem; padding: 4px 12px;">✕ CERRAR</button>
+  <div id="sessions-modal">
+    <div class="modal-bar">
+      <div class="modal-hdr">
+        <span>📋 HISTORIAL DE SESIONES</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-top" onclick="clearAllSessions()" style="color: var(--red);">🗑 BORRAR HISTORIAL</button>
+        <button class="btn-top" onclick="closeSessionsModal()">✕ CERRAR</button>
+      </div>
     </div>
-    <div class="modal-body">
-      <table class="grid-table">
-        <thead>
-          <tr>
-            <th>POS</th>
-            <th>KART</th>
-            <th>PILOTO</th>
-            <th style="text-align:right">S1</th>
-            <th style="text-align:right">S2</th>
-            <th style="text-align:right">S3</th>
-            <th style="text-align:right">ÚLTIMA</th>
-            <th style="text-align:right">MEJOR</th>
-            <th style="text-align:center">VTAS</th>
-          </tr>
-        </thead>
-        <tbody id="board-tbody">
-          <!-- Inyectado dinámicamente -->
-        </tbody>
-      </table>
+
+    <div class="sessions-layout">
+      <!-- Lista de sesiones guardadas -->
+      <div class="sessions-sidebar" id="sessions-sidebar-list">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <!-- Detalle vuelta a vuelta de la sesión seleccionada -->
+      <div class="session-detail-view" id="session-detail-view">
+        <div style="color: var(--muted); padding: 40px; text-align: center;">
+          Selecciona una sesión para ver el vuelta a vuelta detallado.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Instrucciones para iPhone (Safari) -->
+  <div id="ios-install-modal">
+    <div class="ios-box">
+      <div style="font-size: 1.2rem; font-weight: 900; color: var(--gold);">AÑADIR A LA PANTALLA DE INICIO</div>
+      <div style="font-size: 0.85rem; line-height: 1.6; color: #ddd;">
+        1. En Safari, pulsa el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba ⎋).<br>
+        2. Baja y pulsa en <strong>"Añadir a pantalla de inicio"</strong> ➕.<br>
+        3. ¡Listo! Se creará el acceso directo para abrir la app al instante sin navegadores.
+      </div>
+      <button class="btn-main" onclick="document.getElementById('ios-install-modal').classList.remove('open')">ENTENDIDO</button>
     </div>
   </div>
 
   <!-- ============================================================
-       JAVASCRIPT TELEMETRY ENGINE
+       TELEMETRY & SESSION LOGIC ENGINE
        ============================================================ -->
   <script>
-    // Configuración de circuitos Apex Timing
     const CIRCUITS = {
       'kartcenter-campillos': {
         name: 'Kartcenter Campillos',
@@ -972,7 +953,7 @@
         reqUrl: 'https://live-data.apex-timing.com/live-timing/commonv2/functions/'
       },
       'lucas-guerrero': {
-        name: 'Lucas Guerrero (Chiva)',
+        name: 'Lucas Guerrero',
         url: 'https://www.apex-timing.com/live-timing/lucas-guerrero/',
         host: 'live-data.apex-timing.com',
         port: 9370,
@@ -987,7 +968,7 @@
       }
     };
 
-    // Estado global de telemetría
+    // Estado principal
     const state = {
       myKart: '',
       circuitKey: 'kartcenter-campillos',
@@ -1003,40 +984,43 @@
       ignored: 0,
       lastPollMs: 0,
 
-      // Telemetría en pista
-      currentPos: null,
-      currentLapCount: 0,
-      lastLapStr: '—',
-      bestLapStr: '—',
+      // Ciclo de bandera: 'WAITING_GREEN', 'ACTIVE', 'FINISHED'
+      flagStatus: 'none',
+      sessionLifecycle: 'WAITING_GREEN',
+      activeSession: null, // Objeto de sesión grabándose actualmente
 
-      // Tiempos de sectores actuales de la vuelta en curso
+      // Tiempos actuales
       curS1: null,
       curS2: null,
       curS3: null,
-
-      // Referencia de mejores sectores (Personal Best)
       bestS1: null,
       bestS2: null,
       bestS3: null,
       bestLapSec: null,
 
-      // Registro de vueltas anteriores para detectar cambios por paso de antena
-      previousLaps: -1,
-      previousS1Str: '',
-      previousS2Str: '',
-      previousS3Str: '',
+      // Detección de paso por antena
+      prevLaps: -1,
+      prevS1Str: '',
+      prevS2Str: '',
+      prevS3Str: '',
 
-      // Grid completo de pilotos
       drivers: []
     };
 
-    // Inicialización al cargar la página
+    // PWA Install prompt handling
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btn-pwa-install');
+      if (btn) btn.style.display = 'inline-flex';
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       // Cargar kart guardado
       const savedKart = localStorage.getItem('kd_kart');
       if (savedKart) document.getElementById('kart-input').value = savedKart;
 
-      // Cargar circuito guardado
       const savedCircuit = localStorage.getItem('kd_circuit');
       if (savedCircuit && CIRCUITS[savedCircuit]) {
         document.getElementById('circuit-select').value = savedCircuit;
@@ -1044,21 +1028,36 @@
         state.circuit = CIRCUITS[savedCircuit];
       }
 
-      // Actualizar reloj
-      setInterval(updateClock, 1000);
-      updateClock();
+      // Comprobar si ya está instalada como PWA
+      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+        const btn = document.getElementById('btn-pwa-install');
+        if (btn) btn.style.display = 'none'; // Ya está instalada
+      }
 
-      // Service worker registration
+      // Service Worker
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./public/sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
       }
     });
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock-display').textContent =
-        now.getHours().toString().padStart(2, '0') + ':' +
-        now.getMinutes().toString().padStart(2, '0');
+    function triggerPWAInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            document.getElementById('btn-pwa-install').style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // En iOS Safari no existe beforeinstallprompt, mostrar modal explicativo
+        const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+        if (isIOS) {
+          document.getElementById('ios-install-modal').classList.add('open');
+        } else {
+          alert('Para instalar la app, abre el menú de opciones de tu navegador (⋮) y selecciona "Instalar aplicación" o "Añadir a la pantalla de inicio".');
+        }
+      }
     }
 
     function onCircuitChange() {
@@ -1070,14 +1069,14 @@
     }
 
     // ============================================================
-    //  ARRANCAR LA APP (MODO CARRERA O MODO TEST)
+    //  INICIO DE SESIÓN
     // ============================================================
     function startApp(isSimulator = false) {
       const kartVal = document.getElementById('kart-input').value.trim();
       if (!kartVal) {
         const inp = document.getElementById('kart-input');
         inp.focus();
-        inp.style.borderColor = 'var(--red-loss)';
+        inp.style.borderColor = 'var(--red)';
         setTimeout(() => inp.style.borderColor = '', 1000);
         return;
       }
@@ -1086,30 +1085,24 @@
       localStorage.setItem('kd_kart', kartVal);
       state.isSimMode = isSimulator;
 
-      // Actualizar HUD con datos básicos
       document.getElementById('hud-kart-tag').textContent = `KART #${kartVal}`;
-      document.getElementById('bar-circuit-name').textContent = state.circuit.name;
+      document.getElementById('hud-circuit-name').textContent = state.circuit.name;
 
-      const badge = document.getElementById('connection-badge');
-      if (isSimulator) {
-        badge.textContent = 'SIM TEST';
-        badge.className = 'status-badge sim';
-      } else {
-        badge.textContent = 'LIVE';
-        badge.className = 'status-badge live';
-      }
+      // Reseteo de telemetría previa
+      state.activeSession = null;
+      state.sessionLifecycle = 'WAITING_GREEN';
+      setSessionBadge('waiting', 'ESPERANDO BANDERA VERDE');
+      document.getElementById('hero-stage').textContent = 'PRE-PARRILLA';
+      document.getElementById('hero-delta').textContent = '---';
+      document.getElementById('hero-desc').textContent = 'ESPERANDO BANDERA VERDE 🟢';
+      document.getElementById('hero-box').className = 'hero-delta-box';
 
-      // Intentar bloqueo de orientación horizontal y pantalla completa
       tryLockLandscape();
-
-      // Cambiar de pantalla
       showScreen('app');
-
-      // Solicitar Wake Lock para que la pantalla no se apague en el kart
       requestWakeLock();
 
       if (isSimulator) {
-        runTelemetrySimulator();
+        runSimulatorEngine();
       } else {
         startLivePolling();
       }
@@ -1137,6 +1130,10 @@
 
     function exitToHome() {
       stopAllEngines();
+      // Si había sesión activa, guardarla al salir
+      if (state.activeSession && state.activeSession.laps.length > 0) {
+        finalizeAndSaveSession();
+      }
       showScreen('splash');
     }
 
@@ -1151,7 +1148,7 @@
       if (state.simTimer) clearTimeout(state.simTimer);
     }
 
-    // Wake Lock API (Mantiene la pantalla 100% encendida)
+    // Wake Lock
     let wakeLock = null;
     async function requestWakeLock() {
       try {
@@ -1167,7 +1164,7 @@
     });
 
     // ============================================================
-    //  LIVE TIMING ENGINE (POLLING A APEX TIMING)
+    //  LIVE POLLING ENGINE
     // ============================================================
     function startLivePolling() {
       stopAllEngines();
@@ -1202,35 +1199,17 @@
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
         const text = await resp.text();
-        setConnectionStatus(true);
-
         if (text && text.length > 0) {
           parseApexResponse(text);
         }
 
         state.pollTimer = setTimeout(pollTick, 1000);
       } catch (e) {
-        setConnectionStatus(false);
         state.ignored++;
         state.pollTimer = setTimeout(pollTick, 4000);
       }
     }
 
-    function setConnectionStatus(ok) {
-      const b = document.getElementById('connection-badge');
-      if (state.isSimMode) return;
-      if (ok) {
-        b.textContent = 'LIVE';
-        b.className = 'status-badge live';
-      } else {
-        b.textContent = 'LOST';
-        b.className = 'status-badge lost';
-      }
-    }
-
-    // ============================================================
-    //  PARSER DE MENSAJES DE APEX TIMING
-    // ============================================================
     function parseApexResponse(raw) {
       const parts = raw.split('@');
       if (parts.length < 3) return;
@@ -1252,35 +1231,98 @@
       }
     }
 
+    // ============================================================
+    //  GESTIÓN DE BANDERAS: VERDE = GRABAR, CUADROS = TERMINAR
+    // ============================================================
     function handleApexField(field, type, value) {
-      switch (field) {
-        case 'title2':
-          if (value) document.getElementById('session-category').textContent = value;
-          break;
-        case 'light':
-          updateFlagIndicator(type);
-          break;
-        case 'grid':
-          if (value) parseFullGrid(value);
-          break;
+      if (field === 'light') {
+        processFlagEvent(type);
+      } else if (field === 'grid') {
+        if (value) parseFullGrid(value);
       }
     }
 
-    function updateFlagIndicator(type) {
-      const el = document.getElementById('flag-indicator');
-      el.className = 'flag-indicator';
-      if (!type || type === 'lg') {
-        el.style.background = '#555';
-      } else if (type.includes('green') || type === 'go') {
-        el.classList.add('green');
-      } else if (type.includes('yellow') || type.includes('sc')) {
-        el.classList.add('yellow');
-      } else if (type.includes('red')) {
-        el.classList.add('red');
+    function processFlagEvent(lightType) {
+      const bullet = document.getElementById('flag-bullet');
+      bullet.className = 'flag-bullet';
+
+      // 1. BANDERA VERDE (Inicio de toma de datos)
+      if (lightType && (lightType.includes('green') || lightType === 'go' || lightType === 'p')) {
+        bullet.classList.add('green');
+        if (state.sessionLifecycle !== 'ACTIVE') {
+          startSessionRecording();
+        }
+      }
+      // 2. BANDERA DE CUADROS (Fin de sesión y guardado automático)
+      else if (lightType && (lightType.includes('fin') || lightType.includes('check') || lightType.includes('end'))) {
+        bullet.classList.add('checkered');
+        if (state.sessionLifecycle === 'ACTIVE') {
+          finishSessionRecording();
+        }
+      }
+      // 3. BANDERA AMARILLA / SAFETY CAR
+      else if (lightType && (lightType.includes('yellow') || lightType.includes('sc'))) {
+        bullet.classList.add('yellow');
+        if (state.sessionLifecycle === 'ACTIVE') {
+          setSessionBadge('recording', '🟡 AMARILLA / SC');
+        }
+      }
+      // 4. BANDERA ROJA
+      else if (lightType && lightType.includes('red')) {
+        bullet.classList.add('red');
+        if (state.sessionLifecycle === 'ACTIVE') {
+          setSessionBadge('recording', '🔴 BANDERA ROJA');
+        }
+      }
+      // 5. SIN BANDERA / REPOSO
+      else {
+        bullet.style.background = '#444';
       }
     }
 
-    // Parse del HTML del grid para extraer telemetría exacta
+    function startSessionRecording() {
+      state.sessionLifecycle = 'ACTIVE';
+      setSessionBadge('recording', '● SESIÓN EN CURSO');
+
+      // Crear objeto de sesión nuevo
+      state.activeSession = {
+        id: 'sess_' + Date.now(),
+        date: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        circuit: state.circuit.name,
+        kart: state.myKart,
+        laps: [],
+        bestLap: '—',
+        bestLapSec: null,
+        startTime: Date.now(),
+        endTime: null
+      };
+
+      document.getElementById('hero-stage').textContent = 'BANDERA VERDE 🟢';
+      document.getElementById('hero-desc').textContent = 'REGISTRANDO TIEMPOS';
+
+      if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
+    }
+
+    function finishSessionRecording() {
+      state.sessionLifecycle = 'FINISHED';
+      setSessionBadge('finished', '🏁 SESIÓN FINALIZADA');
+
+      document.getElementById('hero-stage').textContent = 'BANDERA DE CUADROS';
+      document.getElementById('hero-desc').textContent = 'SESIÓN GUARDADA EN HISTORIAL';
+
+      finalizeAndSaveSession();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+    }
+
+    function setSessionBadge(cls, text) {
+      const b = document.getElementById('session-status-badge');
+      b.className = `badge-status ${cls}`;
+      b.textContent = text;
+    }
+
+    // ============================================================
+    //  PARSER DE GRID & TELEMETRÍA SECTOR A SECTOR
+    // ============================================================
     function parseFullGrid(html) {
       const div = document.createElement('div');
       div.innerHTML = html;
@@ -1288,7 +1330,7 @@
       const drivers = [];
 
       rows.forEach(r => {
-        if (r.getAttribute('data-id') === 'r0') return; // cabecera
+        if (r.getAttribute('data-id') === 'r0') return;
         const c = {};
         r.querySelectorAll('td[data-type]').forEach(td => {
           c[td.getAttribute('data-type')] = td.textContent.trim();
@@ -1308,347 +1350,436 @@
         });
       });
 
-      // Ordenar por clasificación
       drivers.sort((a, b) => (a.pos || 999) - (b.pos || 999));
       state.drivers = drivers;
 
-      // Renderizar tabla modal de pitlane
-      renderBoardModal();
-
-      // Localizar mi kart
       const me = drivers.find(d => d.kart === state.myKart);
       if (me) {
-        updateMyTelemetry(me);
+        processMyTelemetry(me);
       }
     }
 
-    // ============================================================
-    //  MOTOR DE DETECCIÓN DE SECTORES Y DELTA
-    // ============================================================
-    function updateMyTelemetry(me) {
-      // 1. Posición y vueltas
-      state.currentPos = me.pos;
-      state.currentLapCount = me.laps;
+    function processMyTelemetry(me) {
+      // 1. Posición y Vueltas
       document.getElementById('hud-pos').textContent = me.pos ? `P${me.pos}` : 'P--';
-      document.getElementById('hud-lap-count').textContent = me.laps || '--';
+      document.getElementById('hud-laps').textContent = me.laps || '--';
 
       // 2. Última vuelta y Mejor vuelta
       if (me.lastLap && me.lastLap !== '—') {
-        state.lastLapStr = me.lastLap;
         document.getElementById('hud-last-lap').textContent = me.lastLap;
       }
       if (me.bestLap && me.bestLap !== '—') {
-        state.bestLapStr = me.bestLap;
         document.getElementById('hud-best-lap').textContent = me.bestLap;
-        const bSec = parseLapSeconds(me.bestLap);
+        const bSec = parseSeconds(me.bestLap);
         if (bSec) state.bestLapSec = bSec;
       }
 
-      // 3. Detección de paso por antena de SECTOR 1
-      if (me.s1 && me.s1 !== '—' && me.s1 !== state.previousS1Str) {
-        state.previousS1Str = me.s1;
-        state.curS1 = parseLapSeconds(me.s1);
+      // Si aún no se activó la sesión pero el kart ya registra vueltas en verde, iniciarla
+      if (state.sessionLifecycle === 'WAITING_GREEN' && me.laps > 0) {
+        startSessionRecording();
+      }
 
-        // Si es su mejor S1 histórico, guardarlo
+      // 3. PASO POR SECTOR 1
+      if (me.s1 && me.s1 !== '—' && me.s1 !== state.prevS1Str) {
+        state.prevS1Str = me.s1;
+        state.curS1 = parseSeconds(me.s1);
+
         if (!state.bestS1 || (state.curS1 && state.curS1 < state.bestS1)) {
           state.bestS1 = state.curS1;
         }
 
-        onSectorTriggered(1, state.curS1, state.bestS1, me.s1);
+        handleSectorCrossing(1, state.curS1, state.bestS1, me.s1);
       }
 
-      // 4. Detección de paso por antena de SECTOR 2
-      if (me.s2 && me.s2 !== '—' && me.s2 !== state.previousS2Str) {
-        state.previousS2Str = me.s2;
-        state.curS2 = parseLapSeconds(me.s2);
+      // 4. PASO POR SECTOR 2
+      if (me.s2 && me.s2 !== '—' && me.s2 !== state.prevS2Str) {
+        state.prevS2Str = me.s2;
+        state.curS2 = parseSeconds(me.s2);
 
         if (!state.bestS2 || (state.curS2 && state.curS2 < state.bestS2)) {
           state.bestS2 = state.curS2;
         }
 
-        // Delta acumulado hasta Sector 2: (S1 + S2) vs (BestS1 + BestS2)
-        const curCumulative = (state.curS1 || 0) + (state.curS2 || 0);
-        const bestCumulative = (state.bestS1 || 0) + (state.bestS2 || 0);
-        onSectorTriggered(2, curCumulative, bestCumulative, me.s2, state.curS2, state.bestS2);
+        const curCum = (state.curS1 || 0) + (state.curS2 || 0);
+        const bestCum = (state.bestS1 || 0) + (state.bestS2 || 0);
+        handleSectorCrossing(2, curCum, bestCum, me.s2, state.curS2, state.bestS2);
       }
 
-      // 5. Detección de paso por META (SECTOR 3 / VUELTA TERMINADA)
-      if (me.laps !== state.previousLaps && me.laps > 0) {
-        state.previousLaps = me.laps;
+      // 5. PASO POR META (VUELTA COMPLETA)
+      if (me.laps !== state.prevLaps && me.laps > 0) {
+        state.prevLaps = me.laps;
 
-        const curLapSec = parseLapSeconds(me.lastLap);
-        const bestLapSec = state.bestLapSec || curLapSec;
+        const lapSec = parseSeconds(me.lastLap);
+        const bestSec = state.bestLapSec || lapSec;
 
-        // Calcular Sector 3 si está disponible
-        let s3Str = me.s3;
-        if ((!s3Str || s3Str === '—') && curLapSec && state.curS1 && state.curS2) {
-          const s3Calc = curLapSec - state.curS1 - state.curS2;
-          if (s3Calc > 0) s3Str = s3Calc.toFixed(3);
+        let s3Val = me.s3;
+        if ((!s3Val || s3Val === '—') && lapSec && state.curS1 && state.curS2) {
+          const s3Calc = lapSec - state.curS1 - state.curS2;
+          if (s3Calc > 0) s3Val = s3Calc.toFixed(3);
         }
 
-        onFinishLineTriggered(curLapSec, bestLapSec, s3Str);
+        handleFinishCrossing(me.laps, lapSec, bestSec, s3Val, me.lastLap, me.s1, me.s2);
 
-        // Reset de sectores para la nueva vuelta entrante
-        state.previousS1Str = '';
-        state.previousS2Str = '';
-        state.previousS3Str = '';
+        // Reset temporal de antenas
+        state.prevS1Str = '';
+        state.prevS2Str = '';
+        state.prevS3Str = '';
       }
     }
 
-    // DISPARADOR: Paso por Sector 1 o 2
-    function onSectorTriggered(secNum, curVal, refVal, timeStr, individualCur = null, individualBest = null) {
-      let delta = 0;
-      if (curVal && refVal) {
-        delta = curVal - refVal;
+    function handleSectorCrossing(secNum, curVal, refVal, timeStr, indCur = null, indBest = null) {
+      let delta = (curVal && refVal) ? (curVal - refVal) : 0;
+
+      const card = document.getElementById(`card-s${secNum}`);
+      const valEl = document.getElementById(`val-s${secNum}`);
+      const tagEl = document.getElementById(`tag-s${secNum}`);
+
+      card.classList.remove('sec-flash');
+      void card.offsetWidth;
+      card.classList.add('sec-flash');
+
+      valEl.textContent = timeStr;
+
+      let secDelta = delta;
+      if (indCur !== null && indBest !== null) {
+        secDelta = indCur - indBest;
       }
 
-      const box = document.getElementById(`box-s${secNum}`);
-      const timeEl = document.getElementById(`time-s${secNum}`);
-      const deltaEl = document.getElementById(`delta-s${secNum}`);
-
-      // Flash visual en la caja de sector
-      box.classList.remove('sector-flash');
-      void box.offsetWidth; // re-trigger animation
-      box.classList.add('sector-flash');
-
-      // Actualizar tiempo en caja
-      timeEl.textContent = timeStr;
-
-      // Calcular si gana o pierde tiempo en este sector específico
-      let sectorSpecificDelta = delta;
-      if (individualCur !== null && individualBest !== null) {
-        sectorSpecificDelta = individualCur - individualBest;
+      tagEl.textContent = formatDelta(secDelta);
+      card.className = 'sec-card';
+      if (secDelta < 0) {
+        card.classList.add('gain');
+        tagEl.className = 'sec-delta-tag gain';
+      } else if (secDelta > 0) {
+        card.classList.add('loss');
+        tagEl.className = 'sec-delta-tag loss';
       }
 
-      const formattedSecDelta = formatDeltaString(sectorSpecificDelta);
-      deltaEl.textContent = formattedSecDelta;
-
-      box.className = 'sector-box';
-      if (sectorSpecificDelta < 0) {
-        box.classList.add('gain');
-        deltaEl.className = 'sec-delta gain';
-      } else if (sectorSpecificDelta > 0) {
-        box.classList.add('loss');
-        deltaEl.className = 'sec-delta loss';
-      }
-
-      // Actualizar la pantalla central de Delta
-      updateHeroDeltaDisplay(`SECTOR ${secNum}`, delta);
-
-      // Vibración háptica en móvil (si el dispositivo lo soporta)
-      if (navigator.vibrate) {
-        navigator.vibrate(delta < 0 ? [50, 50, 50] : [150]);
-      }
+      renderHeroDelta(`SECTOR ${secNum}`, delta);
+      if (navigator.vibrate) navigator.vibrate(delta < 0 ? [40, 40] : [120]);
     }
 
-    // DISPARADOR: Paso por Meta (Vuelta Completa / Sector 3)
-    function onFinishLineTriggered(curLapSec, bestLapSec, s3TimeStr) {
-      const boxS3 = document.getElementById('box-s3');
-      const timeS3 = document.getElementById('time-s3');
-      const deltaS3 = document.getElementById('delta-s3');
+    function handleFinishCrossing(lapNum, lapSec, bestSec, s3Str, lapTimeStr, s1Str, s2Str) {
+      const cardS3 = document.getElementById('card-s3');
+      const valS3 = document.getElementById('val-s3');
+      const tagS3 = document.getElementById('tag-s3');
 
-      if (s3TimeStr) timeS3.textContent = s3TimeStr;
+      if (s3Str) valS3.textContent = s3Str;
 
       let lapDelta = 0;
-      let isNewPB = false;
+      let isPB = false;
 
-      if (curLapSec && bestLapSec) {
-        lapDelta = curLapSec - bestLapSec;
-        if (lapDelta <= 0 && curLapSec > 0) {
-          isNewPB = true;
-          state.bestLapSec = curLapSec;
-          state.bestLapStr = state.lastLapStr;
-          document.getElementById('hud-best-lap').textContent = state.lastLapStr;
+      if (lapSec && bestSec) {
+        lapDelta = lapSec - bestSec;
+        if (lapDelta <= 0 && lapSec > 0) {
+          isPB = true;
+          state.bestLapSec = lapSec;
+          document.getElementById('hud-best-lap').textContent = lapTimeStr;
         }
       }
 
-      boxS3.classList.remove('sector-flash');
-      void boxS3.offsetWidth;
-      boxS3.classList.add('sector-flash');
+      cardS3.classList.remove('sec-flash');
+      void cardS3.offsetWidth;
+      cardS3.classList.add('sec-flash');
 
-      boxS3.className = 'sector-box';
-      if (isNewPB) {
-        boxS3.classList.add('pb');
-        deltaS3.className = 'sec-delta pb';
-        deltaS3.textContent = 'PB';
+      cardS3.className = 'sec-card';
+      if (isPB) {
+        cardS3.classList.add('pb');
+        tagS3.className = 'sec-delta-tag pb';
+        tagS3.textContent = 'PB';
       } else if (lapDelta < 0) {
-        boxS3.classList.add('gain');
-        deltaS3.className = 'sec-delta gain';
-        deltaS3.textContent = formatDeltaString(lapDelta);
+        cardS3.classList.add('gain');
+        tagS3.className = 'sec-delta-tag gain';
+        tagS3.textContent = formatDelta(lapDelta);
       } else {
-        boxS3.classList.add('loss');
-        deltaS3.className = 'sec-delta loss';
-        deltaS3.textContent = formatDeltaString(lapDelta);
+        cardS3.classList.add('loss');
+        tagS3.className = 'sec-delta-tag loss';
+        tagS3.textContent = formatDelta(lapDelta);
       }
 
-      // Actualizar Hero Delta para meta
-      updateHeroDeltaDisplay('META · VUELTA', lapDelta, isNewPB);
+      renderHeroDelta(`META · VTA ${lapNum}`, lapDelta, isPB);
 
-      if (navigator.vibrate) {
-        navigator.vibrate(isNewPB ? [100, 50, 100, 50, 150] : [100]);
+      // GUARDAR VUELTA EN LA SESIÓN ACTIVA
+      if (state.activeSession) {
+        const lapData = {
+          lap: lapNum,
+          s1: s1Str || state.prevS1Str || '—',
+          s2: s2Str || state.prevS2Str || '—',
+          s3: s3Str || '—',
+          time: lapTimeStr || '—',
+          delta: formatDelta(lapDelta),
+          isBest: isPB
+        };
+
+        // Si es PB, actualizar récord de sesión
+        if (isPB || state.activeSession.bestLap === '—') {
+          state.activeSession.bestLap = lapTimeStr;
+          state.activeSession.bestLapSec = lapSec;
+          // Desmarcar PB en vueltas anteriores
+          state.activeSession.laps.forEach(l => l.isBest = false);
+        }
+
+        state.activeSession.laps.push(lapData);
+
+        // Guardado persistente inmediato en localStorage
+        saveActiveSessionSnapshot();
       }
+
+      if (navigator.vibrate) navigator.vibrate(isPB ? [80, 40, 80, 40, 150] : [80]);
     }
 
-    // RENDER DEL HERO DELTA (CENTRO DE LA PANTALLA)
-    function updateHeroDeltaDisplay(sectorLabel, delta, isNewPB = false) {
-      const heroCard = document.getElementById('hero-card');
-      const badge = document.getElementById('hero-sector-badge');
-      const deltaVal = document.getElementById('hero-delta-val');
-      const deltaDesc = document.getElementById('hero-delta-desc');
+    function renderHeroDelta(stageText, delta, isPB = false) {
+      const box = document.getElementById('hero-box');
+      const stage = document.getElementById('hero-stage');
+      const deltaEl = document.getElementById('hero-delta');
+      const desc = document.getElementById('hero-desc');
 
-      // Animación en el badge de sector
-      badge.textContent = sectorLabel;
-      badge.classList.remove('pulse');
-      void badge.offsetWidth;
-      badge.classList.add('pulse');
+      stage.textContent = stageText;
+      box.className = 'hero-delta-box';
 
-      heroCard.className = 'hero-delta-card';
-
-      if (isNewPB) {
-        heroCard.classList.add('pb');
-        deltaVal.className = 'delta-number pb';
-        deltaVal.textContent = formatDeltaString(delta);
-        deltaDesc.className = 'delta-descriptor pb';
-        deltaDesc.textContent = '🏆 ¡NUEVO RÉCORD PERSONAL!';
+      if (isPB) {
+        box.classList.add('pb');
+        deltaEl.className = 'hero-delta-val pb';
+        deltaEl.textContent = formatDelta(delta);
+        desc.className = 'hero-delta-desc pb';
+        desc.textContent = '🏆 ¡NUEVO RÉCORD PERSONAL!';
       } else if (delta < 0) {
-        // GANANDO TIEMPO (VERDE INTENSO)
-        heroCard.classList.add('gain');
-        deltaVal.className = 'delta-number gain';
-        deltaVal.textContent = formatDeltaString(delta);
-        deltaDesc.className = 'delta-descriptor gain';
-        deltaDesc.textContent = '🟢 GANANDO TIEMPO';
+        box.classList.add('gain');
+        deltaEl.className = 'hero-delta-val gain';
+        deltaEl.textContent = formatDelta(delta);
+        desc.className = 'hero-delta-desc gain';
+        desc.textContent = '🟢 GANANDO TIEMPO';
       } else if (delta > 0) {
-        // PERDIENDO TIEMPO (ROJO INTENSO)
-        heroCard.classList.add('loss');
-        deltaVal.className = 'delta-number loss';
-        deltaVal.textContent = formatDeltaString(delta);
-        deltaDesc.className = 'delta-descriptor loss';
-        deltaDesc.textContent = '🔴 PERDIENDO TIEMPO';
+        box.classList.add('loss');
+        deltaEl.className = 'hero-delta-val loss';
+        deltaEl.textContent = formatDelta(delta);
+        desc.className = 'hero-delta-desc loss';
+        desc.textContent = '🔴 PERDIENDO TIEMPO';
       } else {
-        // NEUTRAL
-        deltaVal.className = 'delta-number neutral';
-        deltaVal.textContent = '0.000';
-        deltaDesc.className = 'delta-descriptor neutral';
-        deltaDesc.textContent = 'TIEMPO CLAVADO';
+        deltaEl.className = 'hero-delta-val neutral';
+        deltaEl.textContent = '0.000';
+        desc.className = 'hero-delta-desc neutral';
+        desc.textContent = 'TIEMPO CLAVADO';
       }
     }
 
     // ============================================================
-    //  SIMULADOR DE TELEMETRÍA (PARA PROBAR EN EL VOLANTE SIN PISTA)
+    //  PERSISTENCIA DE SESIONES EN LOCALSTORAGE
     // ============================================================
-    function runTelemetrySimulator() {
-      let simLap = 1;
-      let simPos = 3;
-
-      // Tiempos base para Campillos (aprox 50s por vuelta)
-      const baseS1 = 16.420;
-      const baseS2 = 18.510;
-      const baseS3 = 15.350;
-      state.bestS1 = baseS1;
-      state.bestS2 = baseS2;
-      state.bestS3 = baseS3;
-      state.bestLapSec = baseS1 + baseS2 + baseS3;
-      state.bestLapStr = state.bestLapSec.toFixed(3);
-      document.getElementById('hud-best-lap').textContent = state.bestLapStr;
-
-      function simLoop() {
-        if (!state.isSimMode) return;
-
-        document.getElementById('hud-pos').textContent = `P${simPos}`;
-        document.getElementById('hud-lap-count').textContent = simLap;
-
-        // Reset display at start of lap
-        document.getElementById('hero-sector-badge').textContent = `VUELTA ${simLap} · EN PISTA`;
-        document.getElementById('hero-delta-val').textContent = '---';
-        document.getElementById('hero-delta-val').className = 'delta-number neutral';
-        document.getElementById('hero-delta-desc').textContent = 'ACELERANDO A FONDO';
-        document.getElementById('hero-card').className = 'hero-delta-card';
-
-        // 1. PASO POR SECTOR 1 (después de 3 segundos simulados)
-        state.simTimer = setTimeout(() => {
-          if (!state.isSimMode) return;
-          // Variación aleatoria: -0.25s a +0.30s
-          const var1 = (Math.random() * 0.55 - 0.25);
-          const s1Time = (baseS1 + var1).toFixed(3);
-          state.curS1 = parseFloat(s1Time);
-          onSectorTriggered(1, state.curS1, state.bestS1, s1Time);
-
-          // 2. PASO POR SECTOR 2 (después de otros 3.5 segundos)
-          state.simTimer = setTimeout(() => {
-            if (!state.isSimMode) return;
-            const var2 = (Math.random() * 0.50 - 0.22);
-            const s2Time = (baseS2 + var2).toFixed(3);
-            state.curS2 = parseFloat(s2Time);
-
-            const curCum = state.curS1 + state.curS2;
-            const bestCum = state.bestS1 + state.bestS2;
-            onSectorTriggered(2, curCum, bestCum, s2Time, state.curS2, state.bestS2);
-
-            // 3. PASO POR META (después de otros 3.5 segundos)
-            state.simTimer = setTimeout(() => {
-              if (!state.isSimMode) return;
-              const var3 = (Math.random() * 0.40 - 0.18);
-              const s3Time = (baseS3 + var3).toFixed(3);
-              state.curS3 = parseFloat(s3Time);
-
-              const lapTimeSec = state.curS1 + state.curS2 + state.curS3;
-              state.lastLapStr = lapTimeSec.toFixed(3);
-              document.getElementById('hud-last-lap').textContent = state.lastLapStr;
-
-              onFinishLineTriggered(lapTimeSec, state.bestLapSec, s3TimeStr = s3Time);
-
-              simLap++;
-              if (Math.random() > 0.6) simPos = Math.max(1, simPos - 1);
-
-              // Siguiente vuelta tras 2.5s
-              state.simTimer = setTimeout(simLoop, 2500);
-            }, 3500);
-          }, 3500);
-        }, 3000);
+    function getStoredSessions() {
+      try {
+        const raw = localStorage.getItem('kd_saved_sessions');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
       }
+    }
 
-      simLoop();
+    function saveActiveSessionSnapshot() {
+      if (!state.activeSession) return;
+      const sessions = getStoredSessions();
+      const existingIdx = sessions.findIndex(s => s.id === state.activeSession.id);
+      if (existingIdx >= 0) {
+        sessions[existingIdx] = state.activeSession;
+      } else {
+        sessions.unshift(state.activeSession);
+      }
+      localStorage.setItem('kd_saved_sessions', JSON.stringify(sessions));
+    }
+
+    function finalizeAndSaveSession() {
+      if (!state.activeSession) return;
+      state.activeSession.endTime = Date.now();
+      saveActiveSessionSnapshot();
+    }
+
+    function clearAllSessions() {
+      if (confirm('¿Estás seguro de que deseas borrar todo el historial de sesiones?')) {
+        localStorage.removeItem('kd_saved_sessions');
+        renderSessionsModal();
+      }
     }
 
     // ============================================================
-    //  TABLA CLASIFICACIÓN MODAL
+    //  MODAL DE SESIONES (VUELTA A VUELTA Y SECTORES)
     // ============================================================
-    function openBoardModal() {
-      document.getElementById('board-modal').classList.add('open');
-    }
-    function closeBoardModal() {
-      document.getElementById('board-modal').classList.remove('open');
+    let selectedSessionId = null;
+
+    function openSessionsModal() {
+      document.getElementById('sessions-modal').classList.add('open');
+      renderSessionsModal();
     }
 
-    function renderBoardModal() {
-      const tbody = document.getElementById('board-tbody');
-      if (!state.drivers || state.drivers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#666; padding:20px;">Sin datos de sesión</td></tr>';
+    function closeSessionsModal() {
+      document.getElementById('sessions-modal').classList.remove('open');
+    }
+
+    function renderSessionsModal() {
+      const sessions = getStoredSessions();
+      const sidebar = document.getElementById('sessions-sidebar-list');
+      const detail = document.getElementById('session-detail-view');
+
+      if (sessions.length === 0) {
+        sidebar.innerHTML = '<div style="color:var(--muted); font-size:0.75rem; padding:16px;">Sin sesiones guardadas aún.</div>';
+        detail.innerHTML = '<div style="color:var(--muted); padding:40px; text-align:center;">Sal a pista con bandera verde para registrar tu primera sesión.</div>';
         return;
       }
 
-      tbody.innerHTML = state.drivers.map(d => {
-        const isMe = d.kart === state.myKart;
+      if (!selectedSessionId || !sessions.find(s => s.id === selectedSessionId)) {
+        selectedSessionId = sessions[0].id;
+      }
+
+      // Render lista lateral
+      sidebar.innerHTML = sessions.map(s => {
+        const isSel = s.id === selectedSessionId;
+        const isLive = state.activeSession && state.activeSession.id === s.id && state.sessionLifecycle === 'ACTIVE';
         return `
-          <tr class="${isMe ? 'my-kart' : ''}">
-            <td style="font-weight:900;">${d.pos || '-'}</td>
-            <td style="font-weight:900;">#${d.kart}</td>
-            <td>${escapeHtml(d.driver)}</td>
-            <td style="text-align:right">${d.s1 || '—'}</td>
-            <td style="text-align:right">${d.s2 || '—'}</td>
-            <td style="text-align:right">${d.s3 || '—'}</td>
-            <td style="text-align:right">${d.lastLap || '—'}</td>
-            <td style="text-align:right; color:var(--purple-pb); font-weight:bold;">${d.bestLap || '—'}</td>
-            <td style="text-align:center">${d.laps || 0}</td>
-          </tr>
+          <div class="session-item ${isSel ? 'selected' : ''}" onclick="selectSession('${s.id}')">
+            <div class="session-item-date">
+              <span>${s.date}</span>
+              ${isLive ? '<span style="color:var(--green)">● EN CURSO</span>' : ''}
+            </div>
+            <div class="session-item-sub">${s.circuit} · Kart #${s.kart}</div>
+            <div class="session-item-best">
+              ${s.laps.length} vtas · Mejor: ${s.bestLap}
+            </div>
+          </div>
         `;
       }).join('');
+
+      // Render detalle de la sesión seleccionada
+      const cur = sessions.find(s => s.id === selectedSessionId);
+      if (!cur) return;
+
+      const lapsRows = cur.laps.map(l => `
+        <tr class="${l.isBest ? 'best-lap-row' : ''}">
+          <td>Vta ${l.lap}</td>
+          <td>${l.s1}</td>
+          <td>${l.s2}</td>
+          <td>${l.s3}</td>
+          <td style="font-size:1rem;">${l.time}</td>
+          <td style="color:${l.isBest ? 'var(--purple)' : (l.delta.startsWith('-') ? 'var(--green)' : 'var(--red)')}">
+            ${l.isBest ? '🏆 MEJOR' : l.delta}
+          </td>
+        </tr>
+      `).join('');
+
+      detail.innerHTML = `
+        <div class="session-summary-bar">
+          <div>
+            <strong style="color:var(--gold);">${cur.circuit}</strong> · Kart #${cur.kart}
+            <div style="font-size:0.7rem; color:var(--muted);">${cur.date} · Total: ${cur.laps.length} vueltas</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:var(--muted); letter-spacing:1px;">MEJOR VUELTA</div>
+            <div style="font-size:1.3rem; font-weight:900; color:var(--purple);">${cur.bestLap}</div>
+          </div>
+        </div>
+
+        <table class="laps-table">
+          <thead>
+            <tr>
+              <th>VUELTA</th>
+              <th>SECTOR 1</th>
+              <th>SECTOR 2</th>
+              <th>SECTOR 3</th>
+              <th>TIEMPO</th>
+              <th>DELTA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${lapsRows.length > 0 ? lapsRows : '<tr><td colspan="6" style="text-align:center; padding:20px; color:#555;">Esperando primera vuelta completada...</td></tr>'}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function selectSession(id) {
+      selectedSessionId = id;
+      renderSessionsModal();
     }
 
     // ============================================================
-    //  UTILIDADES MATEMÁTICAS
+    //  SIMULADOR DE TEST (PRUEBA BANDERAS, SECTORES Y SESIÓN)
     // ============================================================
-    function parseLapSeconds(str) {
+    function runSimulatorEngine() {
+      let simLap = 1;
+      let simPos = 3;
+      const bS1 = 16.320;
+      const bS2 = 18.450;
+      const bS3 = 15.210;
+      state.bestS1 = bS1;
+      state.bestS2 = bS2;
+      state.bestS3 = bS3;
+      state.bestLapSec = bS1 + bS2 + bS3;
+
+      // 1. Simular Pre-Parrilla
+      processFlagEvent('');
+      setSessionBadge('waiting', 'ESPERANDO BANDERA VERDE');
+      document.getElementById('hero-stage').textContent = 'PRE-PARRILLA (SIM)';
+      document.getElementById('hero-desc').textContent = 'LA BANDERA VERDE CAERÁ EN 3s...';
+
+      // 2. Caída de Bandera Verde a los 3 segundos
+      state.simTimer = setTimeout(() => {
+        if (!state.isSimMode) return;
+        processFlagEvent('green');
+
+        function loopLap() {
+          if (!state.isSimMode) return;
+
+          document.getElementById('hud-pos').textContent = `P${simPos}`;
+          document.getElementById('hud-laps').textContent = simLap;
+
+          // Sector 1
+          state.simTimer = setTimeout(() => {
+            if (!state.isSimMode) return;
+            const v1 = (Math.random() * 0.5 - 0.22);
+            const s1Time = (bS1 + v1).toFixed(3);
+            state.curS1 = parseFloat(s1Time);
+            handleSectorCrossing(1, state.curS1, state.bestS1, s1Time);
+
+            // Sector 2
+            state.simTimer = setTimeout(() => {
+              if (!state.isSimMode) return;
+              const v2 = (Math.random() * 0.45 - 0.20);
+              const s2Time = (bS2 + v2).toFixed(3);
+              state.curS2 = parseFloat(s2Time);
+              handleSectorCrossing(2, state.curS1 + state.curS2, state.bestS1 + state.bestS2, s2Time, state.curS2, state.bestS2);
+
+              // Meta
+              state.simTimer = setTimeout(() => {
+                if (!state.isSimMode) return;
+                const v3 = (Math.random() * 0.40 - 0.18);
+                const s3Time = (bS3 + v3).toFixed(3);
+                state.curS3 = parseFloat(s3Time);
+
+                const lapSec = state.curS1 + state.curS2 + state.curS3;
+                const lapStr = lapSec.toFixed(3);
+                document.getElementById('hud-last-lap').textContent = lapStr;
+
+                handleFinishCrossing(simLap, lapSec, state.bestLapSec, s3Time, lapStr, s1Time, s2Time);
+
+                simLap++;
+
+                // Tras 4 vueltas simuladas, sacar BANDERA DE CUADROS
+                if (simLap > 4) {
+                  state.simTimer = setTimeout(() => {
+                    processFlagEvent('checkered');
+                  }, 2500);
+                } else {
+                  state.simTimer = setTimeout(loopLap, 2000);
+                }
+              }, 3000);
+            }, 3000);
+          }, 2500);
+        }
+
+        loopLap();
+      }, 3000);
+    }
+
+    // Utilidades
+    function parseSeconds(str) {
       if (!str || str === '—' || str === '-') return null;
       str = str.toString().replace(',', '.').trim();
       if (str.includes(':')) {
@@ -1659,15 +1790,10 @@
       return isNaN(val) ? null : val;
     }
 
-    function formatDeltaString(sec) {
+    function formatDelta(sec) {
       if (sec === null || isNaN(sec)) return '--.---';
       const sign = sec > 0 ? '+' : (sec < 0 ? '-' : ' ');
-      const abs = Math.abs(sec).toFixed(3);
-      return `${sign}${abs}`;
-    }
-
-    function escapeHtml(s) {
-      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `${sign}${Math.abs(sec).toFixed(3)}`;
     }
   </script>
 </body>
