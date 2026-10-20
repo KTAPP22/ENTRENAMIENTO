@@ -1,34 +1,26 @@
-const CACHE_NAME = 'kart-timing-v3';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
+// Service Worker Killer & Cache Purge
+// Forces all mobile devices to drop stale caches and fetch live HTML immediately.
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).catch(() => {})
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.registration.unregister())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => {
+        clients.forEach(client => {
+          if (client.url && 'navigate' in client) {
+            client.navigate(client.url);
+          }
+        });
+      })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  if (event.request.url.includes('live-data.apex-timing.com') ||
-      event.request.url.includes('live_ajax.php')) {
-    return; // Don't cache live timing queries
-  }
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).catch(() => cached))
-  );
+  // Always fetch fresh from network, never cache
+  event.respondWith(fetch(event.request));
 });

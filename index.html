@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Live Timing" />
@@ -12,6 +15,20 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
   <title>Live Timing</title>
+
+  <!-- Purga agresiva de Service Workers y CacheStorage para móvil -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let r of registrations) { r.unregister(); }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        for (let n of names) { caches.delete(n); }
+      });
+    }
+  </script>
 
   <style>
     /* ============================================================
@@ -195,6 +212,166 @@
       background: rgba(0, 230, 118, 0.15);
       border-color: var(--green);
       color: var(--green);
+    }
+
+    /* Live Timing Status Banner & Quick-select */
+    .live-track-box {
+      background: #0a0a0a;
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .live-track-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .live-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #ccc;
+    }
+    .live-indicator-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #555;
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .live-indicator-dot.online {
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green-glow);
+    }
+    .live-indicator-dot.connecting {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+      animation: recPulse 1.2s infinite;
+    }
+    .live-session-text {
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: var(--gold);
+      background: rgba(255, 215, 0, 0.12);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 4px;
+      padding: 2px 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .live-karts-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid #1a1a1a;
+      padding-top: 8px;
+    }
+    .live-karts-title {
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .live-karts-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 95px;
+      overflow-y: auto;
+    }
+    .live-kart-chip {
+      background: #141414;
+      border: 1px solid var(--border-bright);
+      border-radius: 6px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .live-kart-chip:hover, .live-kart-chip:active {
+      background: #252525;
+      border-color: var(--gold);
+      transform: scale(1.02);
+    }
+    .live-kart-chip.selected {
+      background: #231e05;
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .chip-pos {
+      color: var(--gold);
+      font-weight: 900;
+    }
+    .chip-kart {
+      font-weight: 900;
+    }
+    .chip-lap {
+      font-size: 0.68rem;
+      color: var(--purple);
+    }
+
+    /* Barra rápida de karts en cabina */
+    .cockpit-karts-bar {
+      height: 28px;
+      background: #080808;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .cockpit-karts-bar::-webkit-scrollbar { display: none; }
+    .cockpit-karts-label {
+      font-size: 0.6rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .cockpit-karts-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cockpit-chip {
+      background: #141414;
+      border: 1px solid var(--border-bright);
+      border-radius: 4px;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .cockpit-chip.selected {
+      background: #262005;
+      border-color: var(--gold);
+      color: var(--gold);
     }
 
     @media (orientation: portrait) {
@@ -748,7 +925,7 @@
 <body>
 
   <!-- ============================================================
-       PANTALLA DE INICIO (LIMPIA)
+       PANTALLA DE INICIO (LIMPIA CON ESTADO EN VIVO)
        ============================================================ -->
   <div class="screen active" id="splash">
     <div class="splash-box">
@@ -768,11 +945,31 @@
         </div>
       </div>
 
+      <!-- Live Timing Status Banner & Quick-select -->
+      <div class="live-track-box" id="live-track-box">
+        <div class="live-track-header">
+          <div class="live-status-pill">
+            <span class="live-indicator-dot connecting" id="live-indicator-dot"></span>
+            <span id="live-status-text">CONECTANDO A APEX TIMING...</span>
+          </div>
+          <span class="live-session-text" id="live-session-text">—</span>
+        </div>
+        <div class="live-karts-wrap" id="live-karts-wrap" style="display: none;">
+          <div class="live-karts-title">KARTS EN PISTA (TOCA PARA SELECCIONAR):</div>
+          <div class="live-karts-chips" id="live-karts-chips"></div>
+        </div>
+      </div>
+
       <div class="action-row">
         <button class="btn-main" onclick="startApp(false)">⚡ ENTRAR EN PISTA</button>
         <button class="btn-sub btn-install" id="btn-pwa-install" onclick="triggerPWAInstall()" title="Añadir a pantalla de inicio">📲 INSTALAR APP</button>
         <button class="btn-sub" onclick="openSessionsModal()" title="Historial">📋 SESIONES</button>
         <button class="btn-sub" onclick="startApp(true)" title="Modo Test">🧪 TEST</button>
+      </div>
+
+      <div class="version-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #141414; font-size: 0.65rem; color: #555;">
+        <span id="app-build-tag">REV: 2026.10.20-REV5 · APEX DIRECT</span>
+        <button type="button" onclick="forceAppUpdate()" style="background: none; border: none; color: var(--cyan); cursor: pointer; font-family: var(--font-mono); font-size: 0.65rem; font-weight: bold; text-decoration: underline;">🔄 RECARGAR VERSIÓN</button>
       </div>
     </div>
   </div>
@@ -793,6 +990,14 @@
         <button class="btn-top" onclick="openSessionsModal()">📋 SESIONES</button>
         <button class="btn-top" onclick="toggleFullscreen()">⛶</button>
         <button class="btn-top" onclick="exitToHome()">✕</button>
+      </div>
+    </div>
+
+    <!-- Barra rápida de karts detectados en pista -->
+    <div class="cockpit-karts-bar" id="cockpit-karts-bar">
+      <span class="cockpit-karts-label" id="cockpit-session-title">TANDA EN VIVO</span>
+      <div class="cockpit-karts-scroll" id="cockpit-karts-chips">
+        <!-- Renderizado dinámico -->
       </div>
     </div>
 
@@ -971,8 +1176,9 @@
       circuit: CIRCUITS['campillos'],
       isSimMode: false,
       simTimer: null,
-      pollTimer: null,
-      pollRunning: false,
+      isOnline: false,
+      sessionTitle: '',
+      trackName: '',
 
       // Flags de sesión
       flagStatus: 'none',
@@ -997,7 +1203,7 @@
       drivers: []
     };
 
-    // Servicio de conexión de Apex Timing (Motor idéntico a Individual)
+    // Servicio de conexión a Apex Timing (Conexión directa nativa de alto rendimiento)
     class ApexTimingService {
       constructor() {
         this.configHost = 'live-data.apex-timing.com';
@@ -1005,31 +1211,21 @@
         this.pollIndex = 0;
         this.pollCounter = 0;
         this.randomSessionId = Math.floor(Math.random() * 1000000000) || 1;
-        this.activeProxyIndex = 0;
-
-        // Lista de proxies CORS con fallback idéntica a Individual
-        this.corsProxies = [
-          (url) => url, // Intento directo primero
-          (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-          (url) => `https://corsproxy.org/?${encodeURIComponent(url)}`,
-          (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-        ];
-
         this.sessionRows = new Map();
+        this.pollTimer = null;
+        this.isRunning = false;
       }
 
       start() {
-        this.pollInit = 1;
-        this.pollIndex = 0;
-        this.pollCounter = 0;
-        this.sessionRows.clear();
+        if (this.isRunning) return;
+        this.isRunning = true;
         this.fetchData();
-        
+
         const scheduleNext = () => {
-          if (!state.pollRunning) return;
-          const jitter = Math.floor(Math.random() * 500) - 250;
-          const interval = Math.max(1200, 1800 + jitter);
-          state.pollTimer = setTimeout(() => {
+          if (!this.isRunning) return;
+          const jitter = Math.floor(Math.random() * 400) - 200;
+          const interval = Math.max(1200, 1600 + jitter);
+          this.pollTimer = setTimeout(() => {
             this.fetchData();
             scheduleNext();
           }, interval);
@@ -1038,66 +1234,79 @@
       }
 
       stop() {
-        if (state.pollTimer) {
-          clearTimeout(state.pollTimer);
-          state.pollTimer = null;
+        this.isRunning = false;
+        if (this.pollTimer) {
+          clearTimeout(this.pollTimer);
+          this.pollTimer = null;
         }
       }
 
+      resetForCircuit() {
+        this.pollInit = 1;
+        this.pollIndex = 0;
+        this.pollCounter = 0;
+        this.sessionRows.clear();
+        state.drivers = [];
+        state.sessionTitle = '';
+        state.trackName = '';
+        state.isOnline = false;
+        updateLiveStatusUI();
+        this.fetchData();
+      }
+
       async fetchData() {
-        if (!state.pollRunning || state.isSimMode) return;
-        const circuit = state.circuit;
+        if (state.isSimMode) return;
+        const circuit = state.circuit || CIRCUITS['campillos'];
         const apiPort = circuit.configPort + 4;
         const targetUrl = `https://${this.configHost}/live-timing/commonv2/functions/live_ajax.php?version=1.0.0&init=${this.pollInit}&index=${this.pollIndex}&port=${apiPort}&counter=${this.pollCounter}&duration=100&id=${this.randomSessionId}&ignored=0`;
 
-        for (let pi = 0; pi < this.corsProxies.length; pi++) {
-          const proxyIdx = (this.activeProxyIndex + pi) % this.corsProxies.length;
-          const proxyUrl = this.corsProxies[proxyIdx](targetUrl);
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000);
+          const response = await fetch(targetUrl, {
+            signal: controller.signal,
+            cache: 'no-store'
+          });
+          clearTimeout(timeoutId);
 
-            const response = await fetch(proxyUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
+          if (!response.ok) return;
 
-            if (!response.ok) continue;
+          const dataText = await response.text();
+          this.pollCounter += 1;
 
-            const dataText = await response.text();
-            this.pollCounter += 1;
+          const isInvalid = !dataText ||
+            dataText === 'error' ||
+            dataText.includes('<!DOCTYPE') ||
+            dataText.includes('Server-side requests are not allowed') ||
+            dataText.includes('error code:') ||
+            (dataText.startsWith('{') && dataText.includes('"error"'));
 
-            const isInvalid = !dataText ||
-              dataText === 'error' ||
-              dataText.includes('<!DOCTYPE') ||
-              dataText.includes('Server-side requests are not allowed') ||
-              dataText.includes('error code:') ||
-              (dataText.startsWith('{') && dataText.includes('"error"'));
+          if (!isInvalid) {
+            const atIdx1 = dataText.indexOf('@');
+            const atIdx2 = dataText.indexOf('@', atIdx1 + 1);
 
-            if (!isInvalid) {
-              const atIdx1 = dataText.indexOf('@');
-              const atIdx2 = dataText.indexOf('@', atIdx1 + 1);
+            if (atIdx1 >= 0 && atIdx2 > atIdx1) {
+              const newInit = parseInt(dataText.substring(0, atIdx1), 10);
+              this.pollInit = newInit || this.pollInit;
+              this.pollIndex = parseInt(dataText.substring(atIdx1 + 1, atIdx2), 10) || this.pollIndex;
 
-              if (atIdx1 >= 0 && atIdx2 > atIdx1) {
-                const newInit = parseInt(dataText.substring(0, atIdx1), 10);
-                this.pollInit = newInit || this.pollInit;
-                this.pollIndex = parseInt(dataText.substring(atIdx1 + 1, atIdx2), 10) || this.pollIndex;
-
-                const payload = dataText.substring(atIdx2 + 1);
-                this.activeProxyIndex = proxyIdx;
-                this.processRawPayload(payload);
-              }
-              break;
+              const payload = dataText.substring(atIdx2 + 1);
+              state.isOnline = true;
+              this.processRawPayload(payload);
             }
-          } catch (err) {}
+          }
+        } catch (err) {
+          // Reintento en siguiente ciclo
         }
       }
 
       processRawPayload(payload) {
         if (!payload || payload.trim() === '') return;
-        const circuit = state.circuit;
+        const circuit = state.circuit || CIRCUITS['campillos'];
         const colMap = circuit.columnMap;
         const lines = payload.split('\n');
-        let hasUpdates = false;
+        let hasRowUpdates = false;
 
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i].trim();
@@ -1117,8 +1326,26 @@
             continue;
           }
 
-          // Banderas (light, dyn1, track)
-          if (cellId === 'light' || cellId === 'dyn1' || cellId === 'track') {
+          // Nombre de sesión (title2)
+          if (cellId === 'title2') {
+            const t2 = (value || valueType || '').trim();
+            if (t2) {
+              state.sessionTitle = t2;
+            }
+            continue;
+          }
+
+          // Nombre de pista (track)
+          if (cellId === 'track') {
+            const trk = (value || valueType || '').trim();
+            if (trk) {
+              state.trackName = trk;
+            }
+            continue;
+          }
+
+          // Banderas (light, dyn1)
+          if (cellId === 'light' || cellId === 'dyn1') {
             const statusLower = (valueType + ' ' + value).toLowerCase();
             if (statusLower.includes('chequered') || statusLower.includes('cuadros') || statusLower.includes('finish') || statusLower.includes('fin')) {
               processFlagEvent('checkered');
@@ -1168,7 +1395,7 @@
                   this.applyColumnValue(entry, colSuffix, val, colMap, dataType);
                 });
               });
-              hasUpdates = true;
+              hasRowUpdates = true;
             } catch(e) {}
             continue;
           }
@@ -1196,27 +1423,21 @@
             }
             const entry = this.sessionRows.get(rowId);
             if (this.applyColumnValue(entry, suffix, value, colMap, valueType)) {
-              hasUpdates = true;
+              hasRowUpdates = true;
             }
           }
         }
 
-        if (hasUpdates) {
-          state.drivers = Array.from(this.sessionRows.values())
-            .filter(d => d && d.kartNumber > 0)
-            .sort((a, b) => (a.position || 999) - (b.position || 999));
+        state.drivers = Array.from(this.sessionRows.values())
+          .filter(d => d && d.kartNumber > 0)
+          .sort((a, b) => (a.position || 999) - (b.position || 999));
 
-          // Buscar mi kart
-          const targetKartNum = parseInt(state.myKart, 10);
-          const me = state.drivers.find(d => d.kartNumber === targetKartNum || String(d.kartNumber) === String(state.myKart));
-          if (me) {
-            processMyTelemetry(me);
-          } else {
-            // Indicar conexión viva en espera del kart configurado
-            if (state.drivers.length > 0 && document.getElementById('hero-desc').textContent.includes('CONECTANDO')) {
-              document.getElementById('hero-desc').textContent = `EN PISTA (${state.drivers.length} KARTS) · ESPERANDO KART #${state.myKart}`;
-            }
-          }
+        updateLiveStatusUI();
+
+        // Si la cabina está abierta, procesar telemetría
+        const appScreen = document.getElementById('app');
+        if (appScreen && appScreen.classList.contains('active') && !state.isSimMode) {
+          updateCockpitTelemetry();
         }
       }
 
@@ -1307,6 +1528,110 @@
 
     const apexTimingEngine = new ApexTimingService();
 
+    // Actualización de estado en vivo en pantalla de inicio y cabina
+    function updateLiveStatusUI() {
+      const dot = document.getElementById('live-indicator-dot');
+      const statusText = document.getElementById('live-status-text');
+      const sessionText = document.getElementById('live-session-text');
+      const kartsWrap = document.getElementById('live-karts-wrap');
+      const kartsChips = document.getElementById('live-karts-chips');
+
+      if (state.isOnline) {
+        dot.className = 'live-indicator-dot online';
+        statusText.textContent = `🟢 EN VIVO · ${state.trackName || state.circuit.name}`;
+      } else {
+        dot.className = 'live-indicator-dot connecting';
+        statusText.textContent = 'CONECTANDO A APEX TIMING...';
+      }
+
+      if (state.sessionTitle) {
+        sessionText.textContent = `TANDA: ${state.sessionTitle}`;
+        sessionText.style.display = 'inline-block';
+      } else {
+        sessionText.textContent = 'PISTA ABIERTA';
+      }
+
+      // Karts en inicio
+      if (state.drivers && state.drivers.length > 0) {
+        kartsWrap.style.display = 'flex';
+        kartsChips.innerHTML = state.drivers.map(d => {
+          const isSelected = String(d.kartNumber) === String(state.myKart);
+          const bestStr = d.bestLap && d.bestLap !== '—' ? `<span class="chip-lap">${d.bestLap}</span>` : '';
+          return `<button class="live-kart-chip ${isSelected ? 'selected' : ''}" type="button" onclick="selectKart(${d.kartNumber})">
+            <span class="chip-pos">P${d.position}</span>
+            <span class="chip-kart">#${d.kartNumber}</span>
+            ${bestStr}
+          </button>`;
+        }).join('');
+      } else {
+        kartsWrap.style.display = state.sessionTitle ? 'flex' : 'none';
+        kartsChips.innerHTML = `<span style="font-size:0.75rem; color:var(--muted); padding:4px 0;">Pista abierta · En espera de salida de karts</span>`;
+      }
+
+      // Barra rápida de karts en cabina
+      const cockpitTitle = document.getElementById('cockpit-session-title');
+      if (cockpitTitle) {
+        cockpitTitle.textContent = state.sessionTitle ? `TANDA: ${state.sessionTitle}` : 'TANDA EN VIVO';
+      }
+      const cockpitChips = document.getElementById('cockpit-karts-chips');
+      if (cockpitChips) {
+        if (state.drivers && state.drivers.length > 0) {
+          cockpitChips.innerHTML = state.drivers.map(d => {
+            const isSelected = String(d.kartNumber) === String(state.myKart);
+            return `<button class="cockpit-chip ${isSelected ? 'selected' : ''}" type="button" onclick="selectKart(${d.kartNumber})">
+              #${d.kartNumber} (P${d.position})
+            </button>`;
+          }).join('');
+        } else {
+          cockpitChips.innerHTML = `<span style="font-size:0.65rem; color:var(--muted);">Esperando karts en pista</span>`;
+        }
+      }
+    }
+
+    function selectKart(kartNum) {
+      state.myKart = String(kartNum);
+      localStorage.setItem('kd_kart', state.myKart);
+
+      const inp = document.getElementById('kart-input');
+      if (inp) inp.value = kartNum;
+
+      const tag = document.getElementById('hud-kart-tag');
+      if (tag) tag.textContent = `KART #${kartNum}`;
+
+      updateLiveStatusUI();
+
+      const appScreen = document.getElementById('app');
+      if (appScreen && appScreen.classList.contains('active')) {
+        updateCockpitTelemetry();
+      }
+    }
+
+    function updateCockpitTelemetry() {
+      const targetKartNum = parseInt(state.myKart, 10);
+      const me = state.drivers.find(d => d.kartNumber === targetKartNum || String(d.kartNumber) === String(state.myKart));
+
+      if (me) {
+        processMyTelemetry(me);
+      } else {
+        document.getElementById('hud-pos').textContent = 'P--';
+        document.getElementById('hud-laps').textContent = '--';
+
+        if (state.drivers.length > 0) {
+          document.getElementById('hero-stage').textContent = state.sessionTitle ? `TANDA: ${state.sessionTitle}` : 'EN PISTA';
+          document.getElementById('hero-delta').textContent = 'EN ESPERA';
+          document.getElementById('hero-delta').className = 'hero-delta-val neutral';
+          document.getElementById('hero-box').className = 'hero-delta-box';
+          document.getElementById('hero-desc').textContent = `ESPERANDO KART #${state.myKart} EN PISTA`;
+        } else {
+          document.getElementById('hero-stage').textContent = state.sessionTitle ? `TANDA: ${state.sessionTitle}` : 'CONECTADO';
+          document.getElementById('hero-delta').textContent = 'PRE-PARRILLA';
+          document.getElementById('hero-delta').className = 'hero-delta-val neutral';
+          document.getElementById('hero-box').className = 'hero-delta-box';
+          document.getElementById('hero-desc').textContent = 'CONECTADO A APEX TIMING · ESPERANDO SALIDA A PISTA';
+        }
+      }
+    }
+
     // PWA Install
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -1318,7 +1643,10 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       const savedKart = localStorage.getItem('kd_kart');
-      if (savedKart) document.getElementById('kart-input').value = savedKart;
+      if (savedKart) {
+        document.getElementById('kart-input').value = savedKart;
+        state.myKart = savedKart;
+      }
 
       const savedCircuit = localStorage.getItem('kd_active_circuit');
       if (savedCircuit && CIRCUITS[savedCircuit]) {
@@ -1332,10 +1660,26 @@
         if (btn) btn.style.display = 'none';
       }
 
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      }
+      // Iniciar conexión inmediatamente en segundo plano para alimentar el banner en vivo
+      apexTimingEngine.start();
     });
+
+    function forceAppUpdate() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for (let r of regs) r.unregister();
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(keys => {
+          Promise.all(keys.map(k => caches.delete(k))).then(() => {
+            window.location.href = window.location.pathname + '?v=' + Date.now();
+          });
+        });
+      } else {
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+      }
+    }
 
     function triggerPWAInstall() {
       if (deferredPrompt) {
@@ -1361,6 +1705,7 @@
       state.activeCircuitId = sel;
       state.circuit = CIRCUITS[sel] || CIRCUITS['campillos'];
       localStorage.setItem('kd_active_circuit', sel);
+      apexTimingEngine.resetForCircuit();
     }
 
     // ============================================================
@@ -1390,12 +1735,12 @@
       state.isSimMode = isSimulator;
 
       document.getElementById('hud-kart-tag').textContent = `KART #${kartVal}`;
-      document.getElementById('hud-circuit-name').textContent = state.circuit.name;
+      document.getElementById('hud-circuit-name').textContent = `${state.circuit.name}${state.sessionTitle ? ' · ' + state.sessionTitle : ''}`;
 
       state.activeSession = null;
       state.sessionLifecycle = 'WAITING_GREEN';
-      setSessionBadge('waiting', 'ESPERANDO BANDERA VERDE');
-      document.getElementById('hero-stage').textContent = 'CONECTANDO';
+      setSessionBadge('waiting', 'ESPERANDO SALIDA A PISTA');
+      document.getElementById('hero-stage').textContent = state.sessionTitle ? `TANDA: ${state.sessionTitle}` : 'CONECTANDO';
       document.getElementById('hero-delta').textContent = '---';
       document.getElementById('hero-desc').textContent = 'CONECTANDO AL TIMING...';
       document.getElementById('hero-box').className = 'hero-delta-box';
@@ -1407,8 +1752,7 @@
       if (isSimulator) {
         runSimulatorEngine();
       } else {
-        state.pollRunning = true;
-        apexTimingEngine.start();
+        updateCockpitTelemetry();
       }
     }
 
@@ -1433,8 +1777,6 @@
     }
 
     function exitToHome() {
-      state.pollRunning = false;
-      apexTimingEngine.stop();
       if (state.simTimer) clearTimeout(state.simTimer);
 
       document.querySelectorAll('input, select').forEach(el => {
@@ -1445,6 +1787,7 @@
         finalizeAndSaveSession();
       }
       showScreen('splash');
+      updateLiveStatusUI();
     }
 
     function showScreen(id) {
@@ -1551,9 +1894,35 @@
         if (bSec) state.bestLapSec = bSec;
       }
 
+      // Rellenar sectores si están disponibles
+      if (me.s1 && me.s1 !== '—') document.getElementById('val-s1').textContent = me.s1;
+      if (me.s2 && me.s2 !== '—') document.getElementById('val-s2').textContent = me.s2;
+      if (me.s3 && me.s3 !== '—') document.getElementById('val-s3').textContent = me.s3;
+
       // Si aún no se activó por bandera pero ya ruedan en pista, activar grabación
       if (state.sessionLifecycle === 'WAITING_GREEN' && me.currentLap > 0) {
         startSessionRecording();
+      }
+
+      // Inicializar Delta Hero al entrar si está en espera/conectando
+      const heroStageEl = document.getElementById('hero-stage');
+      const stageText = heroStageEl.textContent || '';
+      if (stageText.includes('CONECTANDO') || stageText.includes('PRE-PARRILLA') || stageText.includes('EN ESPERA') || stageText.includes('SALIDA')) {
+        if (me.lastLap && me.bestLap && me.lastLap !== '—' && me.bestLap !== '—') {
+          const lSec = parseSeconds(me.lastLap);
+          const bSec = parseSeconds(me.bestLap);
+          if (lSec && bSec) {
+            const dLap = lSec - bSec;
+            renderHeroDelta('ÚLTIMA VUELTA', dLap, dLap === 0);
+            document.getElementById('hero-desc').textContent = `VS MEJOR VUELTA (${me.bestLap})`;
+          } else {
+            renderHeroDelta('EN PISTA', 0, false);
+            document.getElementById('hero-desc').textContent = `RODANDO EN PISTA · VTA ${me.currentLap || 1}`;
+          }
+        } else {
+          renderHeroDelta('EN PISTA', 0, false);
+          document.getElementById('hero-desc').textContent = `RODANDO EN PISTA · VTA ${me.currentLap || 1}`;
+        }
       }
 
       // SECTOR 1
