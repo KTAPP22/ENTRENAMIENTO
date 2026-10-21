@@ -1,6 +1,6 @@
 {
-  "name": "Live Timing Telemetría",
-  "short_name": "Live Timing",
+  "name": "KT Kart Telemetry",
+  "short_name": "KT Kart",
   "description": "Live timing delta dashboard para pilotos de karting",
   "start_url": "./index.html",
   "scope": "./",
@@ -20,6 +20,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ]
 }
