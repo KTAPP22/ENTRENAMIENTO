@@ -295,9 +295,14 @@
       background: var(--green);
       box-shadow: 0 0 10px var(--green-glow);
     }
-    .live-indicator-dot.connecting {
+    .live-indicator-dot.standby {
       background: var(--gold);
       box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+      animation: recPulse 2s infinite;
+    }
+    .live-indicator-dot.connecting {
+      background: #888;
+      box-shadow: 0 0 6px rgba(136, 136, 136, 0.4);
       animation: recPulse 1.2s infinite;
     }
     .live-session-text {
@@ -876,7 +881,7 @@
           <label class="field-tag" for="circuit-select">CIRCUITO</label>
           <select class="ctrl-select" id="circuit-select" onchange="onCircuitChange()">
             <option value="campillos" selected>Kartcenter Campillos (Málaga)</option>
-            <option value="lucas-guerrero">Lucas Guerrero (Valencia)</option>
+            <option value="lucas-guerrero">Kartódromo Lucas Guerrero (Valencia)</option>
             <option value="zuera">Circuito Zuera (Zaragoza)</option>
           </select>
         </div>
@@ -906,7 +911,7 @@
       </div>
 
       <div class="version-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #141414; font-size: 0.65rem; color: #555;">
-        <span id="app-build-tag">REV: 2026.10.21-REV7 · LOGO KT</span>
+        <span id="app-build-tag">REV: 2026.10.21-REV8 · LUCAS GUERRERO + CAMPILLOS</span>
         <button type="button" onclick="forceAppUpdate()" style="background: none; border: none; color: var(--cyan); cursor: pointer; font-family: var(--font-mono); font-size: 0.65rem; font-weight: bold; text-decoration: underline;">🔄 RECARGAR VERSIÓN</button>
       </div>
     </div>
@@ -1063,7 +1068,7 @@
       },
       "lucas-guerrero": {
         id: "lucas-guerrero",
-        name: "Lucas Guerrero (Valencia)",
+        name: "Kartódromo Lucas Guerrero (Valencia)",
         url: "https://live.apex-timing.com/kartodromo-lucas-guerrero/",
         configPort: 9950,
         columnMap: {
@@ -1073,11 +1078,11 @@
           s1: 'c6',
           s2: 'c7',
           s3: 'c8',
-          llp: 'c6',
-          blp: 'c7',
-          gap: 'c8',
-          int: 'c9',
-          tlp: 'c10'
+          llp: 'c9',
+          blp: 'c10',
+          gap: 'c11',
+          int: 'c12',
+          tlp: 'c13'
         }
       },
       "zuera": {
@@ -1108,6 +1113,7 @@
       circuit: CIRCUITS['campillos'],
       isSimMode: false,
       simTimer: null,
+      serverConnected: false,
       isOnline: false,
       sessionTitle: '',
       trackName: '',
@@ -1182,6 +1188,7 @@
         state.sessionTitle = '';
         state.trackName = '';
         state.isOnline = false;
+        state.serverConnected = false;
         updateLiveStatusUI();
         this.fetchData();
       }
@@ -1202,8 +1209,13 @@
           });
           clearTimeout(timeoutId);
 
-          if (!response.ok) return;
+          if (!response.ok) {
+            state.serverConnected = false;
+            updateLiveStatusUI();
+            return;
+          }
 
+          state.serverConnected = true;
           const dataText = await response.text();
           this.pollCounter += 1;
 
@@ -1227,9 +1239,13 @@
               state.isOnline = true;
               this.processRawPayload(payload);
             }
+          } else {
+            // El servidor responde 200 pero la pista está en pausa o esperando tanda
+            updateLiveStatusUI();
           }
         } catch (err) {
-          // Reintento en siguiente ciclo
+          state.serverConnected = false;
+          updateLiveStatusUI();
         }
       }
 
@@ -1297,6 +1313,18 @@
               const gridHtml = rest.substring(pipeIdx2 + 1);
               const tempDiv = document.createElement('div');
               tempDiv.innerHTML = '<table>' + gridHtml + '</table>';
+
+              // Extraer dinámicamente las columnas de la fila de cabecera r0 si existe
+              const r0 = tempDiv.querySelector('tr[data-id="r0"]');
+              if (r0) {
+                r0.querySelectorAll('td[data-id]').forEach(td => {
+                  const colId = td.getAttribute('data-id');
+                  const dType = td.getAttribute('data-type');
+                  if (colId && dType) {
+                    colMap[dType] = colId;
+                  }
+                });
+              }
 
               const rows = tempDiv.querySelectorAll('tr[data-id]');
               rows.forEach(row => {
@@ -1379,7 +1407,7 @@
         if (!valStr) return false;
 
         // 1. Posición
-        if (colSuffix === colMap.rk || dataType === 'rk') {
+        if (dataType === 'rk' || colSuffix === colMap.rk) {
           const pos = parseInt(valStr.replace(/[^\d]/g, ''), 10);
           if (!isNaN(pos) && pos > 0) {
             entry.position = pos;
@@ -1388,7 +1416,7 @@
         }
 
         // 2. Número de kart
-        if (colSuffix === colMap.no || dataType === 'no' || dataType.startsWith('no')) {
+        if (dataType === 'no' || dataType.startsWith('no') || colSuffix === colMap.no) {
           const kn = parseInt(valStr.replace(/[^\d]/g, ''), 10);
           if (!isNaN(kn) && kn > 0) {
             entry.kartNumber = kn;
@@ -1397,7 +1425,7 @@
         }
 
         // 3. Piloto
-        if (colSuffix === colMap.dr || dataType === 'dr') {
+        if (dataType === 'dr' || colSuffix === colMap.dr) {
           const clean = valStr.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
           if (clean && clean !== 'Piloto') {
             entry.name = clean;
@@ -1405,48 +1433,48 @@
           }
         }
 
-        // 4. Sector 1
-        if (colSuffix === colMap.s1 || dataType === 's1') {
-          if (valStr && valStr !== '—') {
-            entry.s1 = valStr;
-            return true;
-          }
-        }
-
-        // 5. Sector 2
-        if (colSuffix === colMap.s2 || dataType === 's2') {
-          if (valStr && valStr !== '—') {
-            entry.s2 = valStr;
-            return true;
-          }
-        }
-
-        // 6. Sector 3
-        if (colSuffix === colMap.s3 || dataType === 's3') {
-          if (valStr && valStr !== '—') {
-            entry.s3 = valStr;
-            return true;
-          }
-        }
-
-        // 7. Última vuelta
-        if (colSuffix === colMap.llp || dataType === 'llp' || dataType === 'tn' || dataType === 'ti') {
+        // 4. Última vuelta (Priorizar identificadores de tiempo de vuelta tn / ti / llp)
+        if (dataType === 'llp' || dataType === 'tn' || dataType === 'ti' || (colSuffix === colMap.llp && !dataType.startsWith('s'))) {
           if (valStr && valStr !== '—') {
             entry.lastLap = valStr;
             return true;
           }
         }
 
-        // 8. Mejor vuelta
-        if (colSuffix === colMap.blp || dataType === 'blp' || dataType === 'ib') {
+        // 5. Mejor vuelta (Priorizar ib / blp)
+        if (dataType === 'blp' || dataType === 'ib' || (colSuffix === colMap.blp && !dataType.startsWith('s'))) {
           if (valStr && valStr !== '—') {
             entry.bestLap = valStr;
             return true;
           }
         }
 
+        // 6. Sector 1
+        if (dataType === 's1' || (colSuffix === colMap.s1 && dataType !== 'tn' && dataType !== 'ib' && dataType !== 'tlp')) {
+          if (valStr && valStr !== '—') {
+            entry.s1 = valStr;
+            return true;
+          }
+        }
+
+        // 7. Sector 2
+        if (dataType === 's2' || (colSuffix === colMap.s2 && dataType !== 'tn' && dataType !== 'ib' && dataType !== 'tlp')) {
+          if (valStr && valStr !== '—') {
+            entry.s2 = valStr;
+            return true;
+          }
+        }
+
+        // 8. Sector 3
+        if (dataType === 's3' || (colSuffix === colMap.s3 && dataType !== 'tn' && dataType !== 'ib' && dataType !== 'tlp')) {
+          if (valStr && valStr !== '—') {
+            entry.s3 = valStr;
+            return true;
+          }
+        }
+
         // 9. Vueltas totales
-        if (colSuffix === colMap.tlp || dataType === 'tlp') {
+        if (dataType === 'tlp' || dataType === 'lp' || colSuffix === colMap.tlp) {
           const l = parseInt(valStr.replace(/[^\d]/g, ''), 10);
           if (!isNaN(l) && l > 0) {
             entry.currentLap = l;
@@ -1470,18 +1498,27 @@
         if (state.isOnline) {
           dot.className = 'live-indicator-dot online';
           statusText.textContent = `🟢 EN VIVO · ${state.trackName || state.circuit.name}`;
+        } else if (state.serverConnected) {
+          dot.className = 'live-indicator-dot standby';
+          statusText.textContent = `🟡 CONECTADO AL SERVIDOR · ${state.circuit.name}`;
         } else {
           dot.className = 'live-indicator-dot connecting';
-          statusText.textContent = 'CONECTANDO A APEX TIMING...';
+          statusText.textContent = `CONECTANDO A ${state.circuit.name.toUpperCase()}...`;
         }
       }
 
       if (sessionText) {
-        if (state.sessionTitle) {
+        if (state.isOnline && state.sessionTitle) {
           sessionText.textContent = `TANDA: ${state.sessionTitle}`;
           sessionText.style.display = 'inline-block';
-        } else {
+        } else if (state.isOnline) {
           sessionText.textContent = 'PISTA ABIERTA';
+          sessionText.style.display = 'inline-block';
+        } else if (state.serverConnected) {
+          sessionText.textContent = 'PISTA EN ESPERA';
+          sessionText.style.display = 'inline-block';
+        } else {
+          sessionText.style.display = 'none';
         }
       }
 
