@@ -911,7 +911,7 @@
       </div>
 
       <div class="version-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #141414; font-size: 0.65rem; color: #555;">
-        <span id="app-build-tag">REV: 2026.10.21-REV8 · LUCAS GUERRERO + CAMPILLOS</span>
+        <span id="app-build-tag">REV: 2026.10.21-REV9 · RESET SECTORES EN META</span>
         <button type="button" onclick="forceAppUpdate()" style="background: none; border: none; color: var(--cyan); cursor: pointer; font-family: var(--font-mono); font-size: 0.65rem; font-weight: bold; text-decoration: underline;">🔄 RECARGAR VERSIÓN</button>
       </div>
     </div>
@@ -1667,6 +1667,10 @@
       document.getElementById('hero-desc').textContent = 'CONECTANDO AL TIMING...';
       document.getElementById('hero-box').className = 'hero-delta-box';
 
+      // Marcadores de sector limpios al entrar en pista
+      if (sectorResetTimer) { clearTimeout(sectorResetTimer); sectorResetTimer = null; }
+      [1, 2, 3].forEach(resetSectorCard);
+
       tryLockLandscape();
       showScreen('app');
       requestWakeLock();
@@ -1816,10 +1820,8 @@
         if (bSec) state.bestLapSec = bSec;
       }
 
-      // Rellenar sectores si están disponibles
-      if (me.s1 && me.s1 !== '—') document.getElementById('val-s1').textContent = me.s1;
-      if (me.s2 && me.s2 !== '—') document.getElementById('val-s2').textContent = me.s2;
-      if (me.s3 && me.s3 !== '—') document.getElementById('val-s3').textContent = me.s3;
+      // Los marcadores de sector solo se rellenan cuando cambian (paso por antena),
+      // para que tras pasar por meta queden a 0 y no se mezclen con la vuelta anterior.
 
       // Si aún no se activó por bandera pero ya ruedan en pista, activar grabación
       if (state.sessionLifecycle === 'WAITING_GREEN' && me.currentLap > 0) {
@@ -1888,13 +1890,55 @@
 
         handleFinishCrossing(me.currentLap, lapSec, bestSec, s3Val, me.lastLap, me.s1, me.s2);
 
-        state.prevS1Str = '';
-        state.prevS2Str = '';
-        state.prevS3Str = '';
+        // Guardar los valores actuales (de la vuelta que acaba de cerrarse) como "ya vistos"
+        // para que no vuelvan a pintarse en los marcadores recién puestos a 0.
+        state.prevS1Str = (me.s1 && me.s1 !== '—') ? me.s1 : '';
+        state.prevS2Str = (me.s2 && me.s2 !== '—') ? me.s2 : '';
+        state.prevS3Str = (me.s3 && me.s3 !== '—') ? me.s3 : '';
       }
     }
 
+    // ============================================================
+    //  RESET DE MARCADORES DE SECTOR AL PASAR POR META (TODOS LOS CIRCUITOS)
+    // ============================================================
+    let sectorResetTimer = null;
+
+    function resetSectorCard(secNum) {
+      const card = document.getElementById(`card-s${secNum}`);
+      const valEl = document.getElementById(`val-s${secNum}`);
+      const tagEl = document.getElementById(`tag-s${secNum}`);
+      if (card) card.className = 'sec-card';
+      if (valEl) valEl.textContent = '0.000';
+      if (tagEl) {
+        tagEl.className = 'sec-delta-tag';
+        tagEl.textContent = '--';
+      }
+    }
+
+    function resetSectorCardsAfterFinish() {
+      // S1 y S2 se ponen a 0 nada más cruzar meta
+      resetSectorCard(1);
+      resetSectorCard(2);
+      state.curS1 = null;
+      state.curS2 = null;
+      state.curS3 = null;
+
+      // S3 (el que cierra la vuelta) se muestra unos segundos y luego también a 0
+      if (sectorResetTimer) clearTimeout(sectorResetTimer);
+      sectorResetTimer = setTimeout(() => {
+        resetSectorCard(3);
+        sectorResetTimer = null;
+      }, 3000);
+    }
+
     function handleSectorCrossing(secNum, curVal, refVal, timeStr, indCur = null, indBest = null) {
+      // Si llega el S1 de la nueva vuelta antes de que se limpie el S3, limpiarlo ya
+      if (secNum === 1 && sectorResetTimer) {
+        clearTimeout(sectorResetTimer);
+        sectorResetTimer = null;
+        resetSectorCard(3);
+      }
+
       let delta = (curVal && refVal) ? (curVal - refVal) : 0;
 
       const card = document.getElementById(`card-s${secNum}`);
@@ -1988,6 +2032,9 @@
       }
 
       if (navigator.vibrate) navigator.vibrate(isPB ? [80, 40, 80, 40, 150] : [80]);
+
+      // Nueva vuelta: poner marcadores de sector a 0
+      resetSectorCardsAfterFinish();
     }
 
     function renderHeroDelta(stageText, delta, isPB = false) {
