@@ -911,7 +911,7 @@
       </div>
 
       <div class="version-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #141414; font-size: 0.65rem; color: #555;">
-        <span id="app-build-tag">REV: 2026.10.21-REV9 · RESET SECTORES EN META</span>
+        <span id="app-build-tag">REV: 2026.10.21-REV10 · RESET SECTORES TRAS META</span>
         <button type="button" onclick="forceAppUpdate()" style="background: none; border: none; color: var(--cyan); cursor: pointer; font-family: var(--font-mono); font-size: 0.65rem; font-weight: bold; text-decoration: underline;">🔄 RECARGAR VERSIÓN</button>
       </div>
     </div>
@@ -1916,27 +1916,24 @@
     }
 
     function resetSectorCardsAfterFinish() {
-      // S1 y S2 se ponen a 0 nada más cruzar meta
-      resetSectorCard(1);
-      resetSectorCard(2);
-      state.curS1 = null;
-      state.curS2 = null;
-      state.curS3 = null;
-
-      // S3 (el que cierra la vuelta) se muestra unos segundos y luego también a 0
+      // Al cruzar meta se mantienen visibles S1, S2 y S3 juntos (vuelta completa)
+      // y pasados unos segundos ya en la nueva vuelta, los TRES se ponen a 0 a la vez.
       if (sectorResetTimer) clearTimeout(sectorResetTimer);
       sectorResetTimer = setTimeout(() => {
-        resetSectorCard(3);
+        [1, 2, 3].forEach(resetSectorCard);
+        state.curS1 = null;
+        state.curS2 = null;
+        state.curS3 = null;
         sectorResetTimer = null;
-      }, 3000);
+      }, 4000);
     }
 
     function handleSectorCrossing(secNum, curVal, refVal, timeStr, indCur = null, indBest = null) {
-      // Si llega el S1 de la nueva vuelta antes de que se limpie el S3, limpiarlo ya
+      // Si llega el S1 de la nueva vuelta antes de que se limpien los marcadores, limpiarlos ya
       if (secNum === 1 && sectorResetTimer) {
         clearTimeout(sectorResetTimer);
         sectorResetTimer = null;
-        resetSectorCard(3);
+        [2, 3].forEach(resetSectorCard);
       }
 
       let delta = (curVal && refVal) ? (curVal - refVal) : 0;
